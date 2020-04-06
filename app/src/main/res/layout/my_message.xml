@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="5dp"
+    android:paddingRight="15dp"
+    android:paddingLeft="60dp"
+    android:clipToPadding="false">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_message"
+        android:background="@drawable/my_message"
+        android:textColor="#fff"
+        android:padding="10dp"
+        android:elevation="2dp"
+        android:textSize="18sp"
+        android:layout_alignParentRight="true"
+        android:text="Placeholder message"
+        />
+    <TextView
+        android:id="@+id/tv_date_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_message"
+        android:layout_alignEnd="@id/tv_message"
+        android:layout_marginTop="5dp"
+        android:visibility="gone"/>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_img_container"
+        android:layout_width="100dp"
+        android:layout_height="200dp"
+        android:layout_alignParentRight="true"
+        card_view:cardElevation="0dp"
+        card_view:cardCornerRadius="8dp"
+        >
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/img_message"
+            android:scaleType="centerCrop"/>
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

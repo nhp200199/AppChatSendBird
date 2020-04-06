@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:background="#FFFFFF"
+    android:layout_height="match_parent">
+
+    <androidx.viewpager.widget.ViewPager
+        android:layout_gravity="center"
+        android:id="@+id/intro_pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="9"
+        />
+    <LinearLayout
+        android:id="@+id/layout_btns"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone"
+
+        >
+        <Button
+            android:id="@+id/btn_register"
+            android:background="@drawable/btn_gradient_style"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:text="Đăng kí"/>
+        <Button
+            android:id="@+id/btn_login"
+            android:background="@drawable/btn_gradient_style"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="Đăng nhập"/>
+        <Button
+            android:id="@+id/btn_login_with_fb"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:text="Đăng nhập với facebook"/>
+
+    </LinearLayout>
+    <RelativeLayout
+        android:id="@+id/rlt_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="40dp"
+        android:paddingBottom="20dp"
+        >
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tl_swipe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:tabBackground="@drawable/tab_selector"
+            android:layout_marginLeft="15dp"
+            app:tabIndicatorHeight="0dp"
+            android:layout_alignBottom="@id/tv_Next"
+             />
+
+        <TextView
+            android:id="@+id/tv_Next"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:drawableRight="@drawable/ic_arrow_forward_black_24dp"
+            android:drawableTint="@color/blue"
+            android:text="NEXT"
+            android:layout_marginRight="15dp"
+            android:textColor="@color/blue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

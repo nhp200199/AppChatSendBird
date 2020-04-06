@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".FindUserActivity">
+
+    <EditText
+        android:id="@+id/edt_find_user"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:hint="Tìm kiếm hội thoại"
+        android:background="@drawable/edt_round_gray"/>
+    <Button
+        android:id="@+id/btn_sthing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="b"/>
+    <LinearLayout
+        android:id="@+id/search_results_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/friends_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
