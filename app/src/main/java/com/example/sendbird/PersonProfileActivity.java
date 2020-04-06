@@ -72,42 +72,6 @@ public class PersonProfileActivity extends AppCompatActivity {
         SendBird.connect(userId, new SendBird.ConnectHandler() {
             @Override
             public void onConnected(User user, SendBirdException e) {
-                FriendListQuery friendListQuery =  SendBird.createFriendListQuery();
-                friendListQuery.next(new FriendListQuery.FriendListQueryResultHandler() {
-                    @Override
-                    public void onResult(List<User> list, SendBirdException e) {
-                        if(e!=null){
-                            Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
-                        }
-                        else{
-                            boolean isFriend = false;
-                            for(User friend: list)
-                            {
-                                if(friend.getFriendName().equals(friendId))
-                                {
-                                    isFriend = true;
-                                    currentState = "friends";
-
-                                    btn_add_friend.setText("Hủy");
-                                    btn_add_friend.setEnabled(true);
-
-                                    btn_cancel_request.setVisibility(View.INVISIBLE);
-                                    btn_cancel_request.setEnabled(false);
-                                    break;
-                                }
-                            }
-                            if(!isFriend){
-                                currentState = "new";
-
-                                btn_add_friend.setText("Kết bạn");
-
-                                btn_cancel_request.setVisibility(View.INVISIBLE);
-                                btn_cancel_request.setEnabled(false);
-                            }
-
-                        }
-                    }
-                });
             }
         });
 
@@ -116,7 +80,6 @@ public class PersonProfileActivity extends AppCompatActivity {
             retrieveUserInfo();
             retrieveRequestStatus();
         }
-
         img_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -228,6 +191,7 @@ public class PersonProfileActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        Toast.makeText(PersonProfileActivity.this, response, Toast.LENGTH_LONG).show();
                         if(response.equals("sent")){
                             currentState = "request received";
 
@@ -247,6 +211,44 @@ public class PersonProfileActivity extends AppCompatActivity {
 
                             btn_add_friend.setText("Hủy kết bạn");
                         }
+                        else{
+                            FriendListQuery friendListQuery =  SendBird.createFriendListQuery();
+                            friendListQuery.next(new FriendListQuery.FriendListQueryResultHandler() {
+                                @Override
+                                public void onResult(List<User> list, SendBirdException e) {
+                                    if(e!=null){
+                                        Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                                    }
+                                    else{
+                                        boolean isFriend = false;
+                                        for(User friend: list)
+                                        {
+                                            if(friend.getFriendName().equals(friendId))
+                                            {
+                                                isFriend = true;
+                                                currentState = "friends";
+
+                                                btn_add_friend.setText("Hủy");
+                                                btn_add_friend.setEnabled(true);
+
+                                                btn_cancel_request.setVisibility(View.INVISIBLE);
+                                                btn_cancel_request.setEnabled(false);
+                                                break;
+                                            }
+                                        }
+                                        if(!isFriend){
+                                            currentState = "new";
+
+                                            btn_add_friend.setText("Kết bạn");
+
+                                            btn_cancel_request.setVisibility(View.INVISIBLE);
+                                            btn_cancel_request.setEnabled(false);
+                                        }
+
+                                    }
+                                }
+                            });
+                        }
                     }
                 }
                 ,
@@ -259,7 +261,7 @@ public class PersonProfileActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
-                params.put("userId", userId);
+                params.put("userId", "1");
                 params.put("friendId", friendId);
                 return params;
             }
@@ -310,5 +312,9 @@ public class PersonProfileActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+    }
 }
