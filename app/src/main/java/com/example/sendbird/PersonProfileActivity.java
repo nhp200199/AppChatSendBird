@@ -3,6 +3,7 @@ package com.example.sendbird;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -13,7 +14,24 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -22,7 +40,7 @@ public class PersonProfileActivity extends AppCompatActivity {
 
     boolean flag = false;
 
-    private String receiverID, senderID, currentState;
+    private String friendId, userId, currentState;
 
     private ImageView img_cover;
     private ImageView img_back;
@@ -41,7 +59,9 @@ public class PersonProfileActivity extends AppCompatActivity {
         connectViews();
 
         if(getIntent().hasExtra(EXTRA_ID)){
+            friendId = getIntent().getStringExtra(EXTRA_ID);
             retrieveUserInfo();
+            retrieveRequestStatus();
         }
 
         img_back.setOnClickListener(new View.OnClickListener() {
@@ -76,7 +96,6 @@ public class PersonProfileActivity extends AppCompatActivity {
 
     }
 
-
     private void connectViews() {
 
         img_cover = findViewById(R.id.img_cover);
@@ -94,7 +113,63 @@ public class PersonProfileActivity extends AppCompatActivity {
     }
 
     private void retrieveUserInfo() {
-        Toast.makeText(PersonProfileActivity.this, getIntent().getStringExtra(EXTRA_ID), Toast.LENGTH_SHORT).show();
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                UserProfileActivity.USER_PROFILE_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject object = new JSONObject(response);
+                            Log.d("TAG", object.toString());
+                            if(object.getString("gender").equals("Nam")){
+                                img_gender.setImageResource(R.drawable.ic_male);
+                            }
+                            else img_gender.setImageResource(R.drawable.ic_female);
+
+                            tv_email.setText(object.getString("email"));
+                            tv_birthday.setText(object.getString("DoB"));
+                            tv_userName.setText(object.getString("nickname"));
+                            tv_gender.setText(object.getString("gender"));
+
+                            Glide.with(PersonProfileActivity.this)
+                                    .load(object.getString("avatar"))
+                                    .thumbnail(0.5f)
+                                    .apply(RequestOptions.skipMemoryCacheOf(true))
+                                    .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))
+                                    .into(civ_avatar);
+                            Glide.with(PersonProfileActivity.this)
+                                    .load(object.getString("cover"))
+                                    .thumbnail(0.5f)
+                                    .apply(RequestOptions.skipMemoryCacheOf(true))
+                                    .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))
+                                    .into(img_cover);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(PersonProfileActivity.this, response, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(PersonProfileActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("id", friendId);
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
+    }
+    private void retrieveRequestStatus() {
+
     }
 
     private void sendRequest() {
