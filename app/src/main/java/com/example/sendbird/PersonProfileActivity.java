@@ -2,6 +2,7 @@ package com.example.sendbird;
 
 import android.content.ContentResolver;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,21 +27,29 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.sendbird.android.FriendListQuery;
+import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
+import com.sendbird.android.User;
+import com.sendbird.android.shadow.com.google.gson.JsonElement;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PersonProfileActivity extends AppCompatActivity {
+    public static final String REQUEST_STATUS_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
     public static final String EXTRA_ID = "FriendId";
 
     boolean flag = false;
 
     private String friendId, userId, currentState;
+    private SharedPreferences sharedPreferences;
 
     private ImageView img_cover;
     private ImageView img_back;
@@ -57,6 +66,50 @@ public class PersonProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_person_profile);
         connectViews();
+        sharedPreferences = getSharedPreferences("user infor", MODE_PRIVATE);
+        userId = sharedPreferences.getString("id", "");
+        SendBird.init(RegisterActivity.appID, this);
+        SendBird.connect(userId, new SendBird.ConnectHandler() {
+            @Override
+            public void onConnected(User user, SendBirdException e) {
+                FriendListQuery friendListQuery =  SendBird.createFriendListQuery();
+                friendListQuery.next(new FriendListQuery.FriendListQueryResultHandler() {
+                    @Override
+                    public void onResult(List<User> list, SendBirdException e) {
+                        if(e!=null){
+                            Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                        else{
+                            boolean isFriend = false;
+                            for(User friend: list)
+                            {
+                                if(friend.getFriendName().equals(friendId))
+                                {
+                                    isFriend = true;
+                                    currentState = "friends";
+
+                                    btn_add_friend.setText("Hủy");
+                                    btn_add_friend.setEnabled(true);
+
+                                    btn_cancel_request.setVisibility(View.INVISIBLE);
+                                    btn_cancel_request.setEnabled(false);
+                                    break;
+                                }
+                            }
+                            if(!isFriend){
+                                currentState = "new";
+
+                                btn_add_friend.setText("Kết bạn");
+
+                                btn_cancel_request.setVisibility(View.INVISIBLE);
+                                btn_cancel_request.setEnabled(false);
+                            }
+
+                        }
+                    }
+                });
+            }
+        });
 
         if(getIntent().hasExtra(EXTRA_ID)){
             friendId = getIntent().getStringExtra(EXTRA_ID);
@@ -169,6 +222,51 @@ public class PersonProfileActivity extends AppCompatActivity {
         requestQueue.add(request);
     }
     private void retrieveRequestStatus() {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                REQUEST_STATUS_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        if(response.equals("sent")){
+                            currentState = "request received";
+
+                            btn_add_friend.setText("Đồng ý");
+                            btn_cancel_request.setVisibility(View.VISIBLE);
+                            btn_cancel_request.setEnabled(true);
+
+                            btn_cancel_request.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    cancelRequest();
+                                }
+                            });
+                        }
+                        else if(response.equals("received")){
+                            currentState = "request sent";
+
+                            btn_add_friend.setText("Hủy kết bạn");
+                        }
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(PersonProfileActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("userId", userId);
+                params.put("friendId", friendId);
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
 
     }
 
