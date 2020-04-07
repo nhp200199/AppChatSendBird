@@ -44,11 +44,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PersonProfileActivity extends AppCompatActivity {
     public static final String REQUEST_STATUS_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
+    public static final String SEND_REQUEST_URL="http://192.168.100.11:8080/SendBird/SendRequest.php";
+    public static final String ACCEPT_REQUEST_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
+    public static final String CANCEL_REQUEST_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
+    public static final String REMOVE_CONTACT_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
     public static final String EXTRA_ID = "FriendId";
 
     boolean flag = false;
 
-    private String friendId, userId, currentState;
+    private String friendId, userId, currentState, requestId;
     private SharedPreferences sharedPreferences;
 
     private ImageView img_cover;
@@ -113,7 +117,6 @@ public class PersonProfileActivity extends AppCompatActivity {
     }
 
     private void connectViews() {
-
         img_cover = findViewById(R.id.img_cover);
         img_back = findViewById(R.id.back);
         civ_avatar = findViewById(R.id.civ_avatar);
@@ -191,8 +194,16 @@ public class PersonProfileActivity extends AppCompatActivity {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        String type = "";
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            type = jsonObject.getString("type");
+                            requestId = jsonObject.getString("id");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         Toast.makeText(PersonProfileActivity.this, response, Toast.LENGTH_LONG).show();
-                        if(response.equals("sent")){
+                        if(type.equals("sent")){
                             currentState = "request received";
 
                             btn_add_friend.setText("Đồng ý");
@@ -206,7 +217,7 @@ public class PersonProfileActivity extends AppCompatActivity {
                                 }
                             });
                         }
-                        else if(response.equals("received")){
+                        else if(type.equals("received")){
                             currentState = "request sent";
 
                             btn_add_friend.setText("Hủy kết bạn");
@@ -273,7 +284,42 @@ public class PersonProfileActivity extends AppCompatActivity {
     }
 
     private void sendRequest() {
+        ProgressDialog.startProgressDialog(PersonProfileActivity.this, "Đang gửi lời mời");
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                SEND_REQUEST_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Toast.makeText(PersonProfileActivity.this, "Đã gửi lời mời tới " + tv_userName.getText().toString(), Toast.LENGTH_LONG).show();
+                        ProgressDialog.dismissProgressDialog();
+                        requestId  = response;
 
+                        currentState = "request sent";
+
+                        btn_add_friend.setEnabled(true);
+                        btn_add_friend.setText("Hủy kết bạn");
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(PersonProfileActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                        ProgressDialog.dismissProgressDialog();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("userId", "1");
+                params.put("friendId", friendId);
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
     }
 
     private void cancelRequest() {
@@ -281,7 +327,6 @@ public class PersonProfileActivity extends AppCompatActivity {
     }
 
     private void acceptRequest() {
-
     }
 
     private void displayRemoveFriendConfirmDialog() {
