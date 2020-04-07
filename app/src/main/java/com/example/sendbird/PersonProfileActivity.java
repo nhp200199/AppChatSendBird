@@ -45,7 +45,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class PersonProfileActivity extends AppCompatActivity {
     public static final String REQUEST_STATUS_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
     public static final String SEND_REQUEST_URL="http://192.168.100.11:8080/SendBird/SendRequest.php";
-    public static final String ACCEPT_REQUEST_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
+    public static final String ACCEPT_REQUEST_URL="http://192.168.100.11:8080/SendBird/AcceptRequest.php";
     public static final String CANCEL_REQUEST_URL="http://192.168.100.11:8080/SendBird/CancelRequest.php";
     public static final String REMOVE_CONTACT_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
     public static final String EXTRA_ID = "FriendId";
@@ -368,7 +368,6 @@ public class PersonProfileActivity extends AppCompatActivity {
     }
 
     private void acceptRequest() {
-        /*
         ProgressDialog.startProgressDialog(PersonProfileActivity.this, "Đang xử lý");
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         StringRequest request =new StringRequest(Request.Method.POST,
@@ -406,8 +405,6 @@ public class PersonProfileActivity extends AppCompatActivity {
         int socketTimeout = 20000;//20s timeout
         RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
         requestQueue.add(request);
-
-         */
 
     }
 
