@@ -28,6 +28,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.sendbird.android.FriendListQuery;
+import com.sendbird.android.GroupChannel;
+import com.sendbird.android.GroupChannelParams;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
@@ -36,6 +38,7 @@ import com.sendbird.android.shadow.com.google.gson.JsonElement;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -234,18 +237,19 @@ public class PersonProfileActivity extends AppCompatActivity {
                                         boolean isFriend = false;
                                         for(User friend: list)
                                         {
-                                            if(friend.getFriendName().equals(friendId))
+                                            if(friend.getUserId().equals(friendId))
                                             {
                                                 isFriend = true;
                                                 currentState = "friends";
 
-                                                btn_add_friend.setText("Hủy");
+                                                btn_add_friend.setText("Xóa bạn bè");
                                                 btn_add_friend.setEnabled(true);
 
                                                 btn_cancel_request.setVisibility(View.INVISIBLE);
                                                 btn_cancel_request.setEnabled(false);
                                                 break;
                                             }
+                                            Toast.makeText(PersonProfileActivity.this, friend.getUserId(), Toast.LENGTH_SHORT).show();
                                         }
                                         if(!isFriend){
                                             currentState = "new";
@@ -255,7 +259,6 @@ public class PersonProfileActivity extends AppCompatActivity {
                                             btn_cancel_request.setVisibility(View.INVISIBLE);
                                             btn_cancel_request.setEnabled(false);
                                         }
-
                                     }
                                 }
                             });
@@ -272,7 +275,7 @@ public class PersonProfileActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
-                params.put("userId", "1");
+                params.put("userId", userId);
                 params.put("friendId", friendId);
                 return params;
             }
@@ -298,7 +301,16 @@ public class PersonProfileActivity extends AppCompatActivity {
                         currentState = "request sent";
 
                         btn_add_friend.setEnabled(true);
-                        btn_add_friend.setText("Hủy kết bạn");
+                        btn_add_friend.setText("Hủy lời mời");
+
+                        List<String> Ids = new ArrayList<>();
+                        Ids.add(friendId);
+                        SendBird.addFriends(Ids, new SendBird.AddFriendsHandler() {
+                            @Override
+                            public void onResult(List<User> list, SendBirdException e) {
+
+                            }
+                        });
                     }
                 }
                 ,
@@ -312,7 +324,7 @@ public class PersonProfileActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
-                params.put("userId", "1");
+                params.put("userId", userId);
                 params.put("friendId", friendId);
                 return params;
             }
@@ -369,18 +381,48 @@ public class PersonProfileActivity extends AppCompatActivity {
 
     private void acceptRequest() {
         ProgressDialog.startProgressDialog(PersonProfileActivity.this, "Đang xử lý");
+
+        final List<String> channelUserIds = new ArrayList<String>();
+        channelUserIds.add(friendId);
+        SendBird.addFriends(channelUserIds, new SendBird.AddFriendsHandler() {
+            @Override
+            public void onResult(List<User> list, SendBirdException e) {
+                if(e != null){
+                    Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    channelUserIds.add(userId);
+                    GroupChannelParams params = new GroupChannelParams()
+                            .setPublic(false)
+                            .setEphemeral(true)
+                            .setDistinct(true)
+                            .addUserIds(channelUserIds);
+                    GroupChannel.createChannel(params, new GroupChannel.GroupChannelCreateHandler() {
+                        @Override
+                        public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                            String channelId = groupChannel.getUrl();
+                            createChannelInDatabase(channelId);
+                        }
+                    });
+
+                }
+            }
+        });
+    }
+
+    private void createChannelInDatabase(final String channelId) {
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         StringRequest request =new StringRequest(Request.Method.POST,
                 ACCEPT_REQUEST_URL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Toast.makeText(PersonProfileActivity.this, "Các bạn đã là bạn bè của nhau", Toast.LENGTH_LONG).show();
+                        Toast.makeText(PersonProfileActivity.this, response, Toast.LENGTH_LONG).show();
                         ProgressDialog.dismissProgressDialog();
 
                         currentState = "friends";
 
-                        btn_add_friend.setText("Hủy");
+                        btn_add_friend.setText("Xóa bạn bè");
                         btn_add_friend.setEnabled(true);
 
                         btn_cancel_request.setVisibility(View.INVISIBLE);
@@ -399,6 +441,9 @@ public class PersonProfileActivity extends AppCompatActivity {
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
                 params.put("requestId", requestId);
+                params.put("channelId", channelId);
+                params.put("userId", userId);
+                params.put("friendId", friendId);
                 return params;
             }
         };
