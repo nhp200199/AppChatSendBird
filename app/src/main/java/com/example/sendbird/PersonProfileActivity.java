@@ -27,12 +27,16 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.sendbird.android.BaseChannel;
+import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FriendListQuery;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelParams;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
+import com.sendbird.android.UserMessage;
+import com.sendbird.android.UserMessageParams;
 import com.sendbird.android.shadow.com.google.gson.JsonElement;
 
 import org.json.JSONException;
@@ -46,11 +50,14 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PersonProfileActivity extends AppCompatActivity {
+    private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_PERSON_PROFILE";
+
     public static final String REQUEST_STATUS_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
     public static final String SEND_REQUEST_URL="http://192.168.100.11:8080/SendBird/SendRequest.php";
     public static final String ACCEPT_REQUEST_URL="http://192.168.100.11:8080/SendBird/AcceptRequest.php";
     public static final String CANCEL_REQUEST_URL="http://192.168.100.11:8080/SendBird/CancelRequest.php";
     public static final String REMOVE_CONTACT_URL="http://192.168.100.11:8080/SendBird/RemoveContact.php";
+    public static final String GET_CHANNEL_URL="http://192.168.100.11:8080/SendBird/GetChannel.php";
     public static final String EXTRA_ID = "FriendId";
 
     boolean isFriend = false;
@@ -85,10 +92,12 @@ public class PersonProfileActivity extends AppCompatActivity {
 
         if(getIntent().hasExtra(EXTRA_ID)){
             friendId = getIntent().getStringExtra(EXTRA_ID);
+            getChannel();
             retrieveUserInfo();
             retrieveRequestStatus();
 
         }
+
         img_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -119,6 +128,43 @@ public class PersonProfileActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void getChannel() {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                PersonProfileActivity.GET_CHANNEL_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        if(response.equals("not found"))
+                        {
+                            //Toast.makeText(PersonProfileActivity.this, "Đã có lỗi xảy ra", Toast.LENGTH_LONG).show();
+                        }
+                        else{
+                            mChannelId= response;
+                            Log.d("Tag", response);
+                        }
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(PersonProfileActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("userId", userId);
+                params.put("friendId", friendId);
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
     }
 
     private void connectViews() {
@@ -499,6 +545,7 @@ public class PersonProfileActivity extends AppCompatActivity {
                         if(response.equals("success"))
                         {
                             unFriend(friendId);
+                            notifyFriend();
                         }
                         else{
                             Toast.makeText(PersonProfileActivity.this, "Đã có lỗi xảy ra", Toast.LENGTH_LONG).show();
@@ -524,6 +571,56 @@ public class PersonProfileActivity extends AppCompatActivity {
         RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
         requestQueue.add(request);
     }
+
+    private void notifyFriend() {
+        GroupChannel.getChannel(mChannelId, new GroupChannel.GroupChannelGetHandler() {
+            @Override
+            public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                if(e == null){
+                    UserMessageParams userMessageParams = new UserMessageParams()
+                            .setMessage("delete")
+                            .setCustomType("notify");
+                    groupChannel.sendUserMessage(userMessageParams, new BaseChannel.SendUserMessageHandler() {
+                        @Override
+                        public void onSent(UserMessage userMessage, SendBirdException e) {
+                            if(e != null){
+                                Log.d("Tag", e.getMessage());
+                                Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                            }
+
+                        }
+                    });
+                }
+                else{
+                    Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                if(baseChannel.getUrl().equals(mChannelId)){
+                    String message = baseMessage.getMessage();
+                    String type =baseMessage.getCustomType();
+
+                    if(type.equals("notify")){
+                        if(message.equals("delete")){
+                            unFriend(friendId);
+                        }
+                    }
+                }
+
+            }
+        });
+    }
+
 
     private void unFriend(String id){
         SendBird.deleteFriend(id, new SendBird.DeleteFriendHandler() {
