@@ -52,15 +52,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class PersonProfileActivity extends AppCompatActivity {
     private static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_PERSON_PROFILE";
 
-    public static final String REQUEST_STATUS_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
-    public static final String SEND_REQUEST_URL="http://192.168.100.11:8080/SendBird/SendRequest.php";
-    public static final String ACCEPT_REQUEST_URL="http://192.168.100.11:8080/SendBird/AcceptRequest.php";
-    public static final String CANCEL_REQUEST_URL="http://192.168.100.11:8080/SendBird/CancelRequest.php";
-    public static final String REMOVE_CONTACT_URL="http://192.168.100.11:8080/SendBird/RemoveContact.php";
-    public static final String GET_CHANNEL_URL="http://192.168.100.11:8080/SendBird/GetChannel.php";
+    public static final String REQUEST_STATUS_URL="http://192.168.100.5:8080/SendBird/GetRequestStatus.php";
+    public static final String SEND_REQUEST_URL="http://192.168.100.5:8080/SendBird/SendRequest.php";
+    public static final String ACCEPT_REQUEST_URL="http://192.168.100.5:8080/SendBird/AcceptRequest.php";
+    public static final String CANCEL_REQUEST_URL="http://192.168.100.5:8080/SendBird/CancelRequest.php";
+    public static final String REMOVE_CONTACT_URL="http://192.168.100.5:8080/SendBird/RemoveContact.php";
+    public static final String GET_CHANNEL_URL="http://192.168.100.5:8080/SendBird/GetChannel.php";
     public static final String EXTRA_ID = "FriendId";
 
-    boolean isFriend = false;
+    boolean isFriend[] = {false};
 
     private String friendId, userId, currentState, requestId;
     private SharedPreferences sharedPreferences;
@@ -139,7 +139,6 @@ public class PersonProfileActivity extends AppCompatActivity {
                     public void onResponse(String response) {
                         if(response.equals("not found"))
                         {
-                            //Toast.makeText(PersonProfileActivity.this, "Đã có lỗi xảy ra", Toast.LENGTH_LONG).show();
                         }
                         else{
                             mChannelId= response;
@@ -255,12 +254,12 @@ public class PersonProfileActivity extends AppCompatActivity {
                                         Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
                                     }
                                     else{
-                                        boolean isFriend = false;
+
                                         for(User friend: list)
                                         {
                                             if(friend.getUserId().equals(friendId))
                                             {
-                                                isFriend = true;
+                                                isFriend[0] = true;
                                                 currentState = "friends";
 
                                                 btn_add_friend.setText("Xóa bạn bè");
@@ -273,7 +272,7 @@ public class PersonProfileActivity extends AppCompatActivity {
 
                                         }
                                         Log.d("Tag", String.valueOf(isFriend));
-                                        if(!isFriend){
+                                        if(!isFriend[0]){
                                             unFriend(friendId);
                                             currentState = "new";
 
@@ -358,14 +357,14 @@ public class PersonProfileActivity extends AppCompatActivity {
                         btn_add_friend.setEnabled(true);
                         btn_add_friend.setText("Hủy lời mời");
 
-                        List<String> Ids = new ArrayList<>();
-                        Ids.add(friendId);
-                        SendBird.addFriends(Ids, new SendBird.AddFriendsHandler() {
-                            @Override
-                            public void onResult(List<User> list, SendBirdException e) {
-
-                            }
-                        });
+//                        List<String> Ids = new ArrayList<>();
+//                        Ids.add(friendId);
+//                        SendBird.addFriends(Ids, new SendBird.AddFriendsHandler() {
+//                            @Override
+//                            public void onResult(List<User> list, SendBirdException e) {
+//                                isFriend[0] = true;
+//                            }
+//                        });
                     }
                 }
                 ,
@@ -399,9 +398,6 @@ public class PersonProfileActivity extends AppCompatActivity {
                     public void onResponse(String response) {
                         ProgressDialog.dismissProgressDialog();
                         if(response.equals("success")){
-                            if(isFriend){
-                                unFriend(friendId);
-                            }
                             Toast.makeText(PersonProfileActivity.this, "Đã hủy yêu cầu", Toast.LENGTH_LONG).show();
 
                             currentState = "new";
@@ -478,6 +474,8 @@ public class PersonProfileActivity extends AppCompatActivity {
                         Toast.makeText(PersonProfileActivity.this, response, Toast.LENGTH_LONG).show();
                         ProgressDialog.dismissProgressDialog();
 
+                        notifyFriend("notify", "add");
+
                         currentState = "friends";
 
                         btn_add_friend.setText("Xóa bạn bè");
@@ -545,7 +543,14 @@ public class PersonProfileActivity extends AppCompatActivity {
                         if(response.equals("success"))
                         {
                             unFriend(friendId);
-                            notifyFriend();
+                            notifyFriend("notify", "delete");
+
+                            currentState = "new";
+
+                            btn_add_friend.setText("Kết bạn");
+
+                            btn_cancel_request.setVisibility(View.INVISIBLE);
+                            btn_cancel_request.setEnabled(false);
                         }
                         else{
                             Toast.makeText(PersonProfileActivity.this, "Đã có lỗi xảy ra", Toast.LENGTH_LONG).show();
@@ -572,14 +577,15 @@ public class PersonProfileActivity extends AppCompatActivity {
         requestQueue.add(request);
     }
 
-    private void notifyFriend() {
+    private void notifyFriend(final String type, final String message) {
         GroupChannel.getChannel(mChannelId, new GroupChannel.GroupChannelGetHandler() {
             @Override
             public void onResult(GroupChannel groupChannel, SendBirdException e) {
                 if(e == null){
                     UserMessageParams userMessageParams = new UserMessageParams()
-                            .setMessage("delete")
-                            .setCustomType("notify");
+                            .setCustomType(type)
+                            .setMessage(message);
+
                     groupChannel.sendUserMessage(userMessageParams, new BaseChannel.SendUserMessageHandler() {
                         @Override
                         public void onSent(UserMessage userMessage, SendBirdException e) {
@@ -613,7 +619,36 @@ public class PersonProfileActivity extends AppCompatActivity {
                     if(type.equals("notify")){
                         if(message.equals("delete")){
                             unFriend(friendId);
+
+                            currentState = "new";
+
+                            btn_add_friend.setText("Kết bạn");
+
+                            btn_cancel_request.setVisibility(View.INVISIBLE);
+                            btn_cancel_request.setEnabled(false);
                         }
+                        else if(message.equals("add")){
+                            List<String> id = new ArrayList<>();
+                            id.add(friendId);
+                            SendBird.addFriends(id, new SendBird.AddFriendsHandler() {
+                                @Override
+                                public void onResult(List<User> list, SendBirdException e) {
+                                    if(e!=null){
+                                        Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+
+                            isFriend[0] = true;
+                            currentState = "friends";
+
+                            btn_add_friend.setText("Xóa bạn bè");
+                            btn_add_friend.setEnabled(true);
+
+                            btn_cancel_request.setVisibility(View.INVISIBLE);
+                            btn_cancel_request.setEnabled(false);
+                        }
+
                     }
                 }
 
