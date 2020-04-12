@@ -1,7 +1,9 @@
 package com.example.sendbird;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +28,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.sendbird.android.GroupChannel;
+import com.sendbird.android.GroupChannelParams;
 import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
+import com.sendbird.android.User;
 import com.sendbird.android.shadow.com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -34,19 +40,20 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FriendRequestActivity extends AppCompatActivity  {
-    public static final String GET_REQUESTS_URL = "http://192.168.100.11:8080/SendBird/GetRequests.php";
-    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.11:8080/SendBird/GetRecentSearch.php";
+    public static final String GET_REQUESTS_URL = "http://192.168.100.5:8080/SendBird/GetRequests.php";
+    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.5:8080/SendBird/GetRecentSearch.php";
     private EditText edt_find_user;
     private ImageView img_back;
     private RecyclerView requests_container;
     private RecyclerView recent_search_container;
 
-    private String currentUid;
+    private String userId;
     private String friendId;
     private ArrayList<RequestItem> requestItems;
     private RequestAdapter requestAdapter;
@@ -60,6 +67,16 @@ public class FriendRequestActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_friend_request);
         connectViews();
 
+        SharedPreferences sharedPreferences = getSharedPreferences("user infor", MODE_PRIVATE);
+        userId = sharedPreferences.getString("id", "");
+        SendBird.connect(userId, new SendBird.ConnectHandler() {
+            @Override
+            public void onConnected(User user, SendBirdException e) {
+                if(e != null)
+                    Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
         requestItems = new ArrayList<RequestItem>();
         requestAdapter = new RequestAdapter(requestItems, this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -67,6 +84,23 @@ public class FriendRequestActivity extends AppCompatActivity  {
         linearLayoutManager.setStackFromEnd(true);
         requests_container.setLayoutManager(linearLayoutManager);
         requests_container.setAdapter(requestAdapter);
+        requestAdapter.setListener(new RequestAdapter.Listener() {
+            @Override
+            public void onClick(int viewType, int position) {
+                switch (viewType){
+                    case R.id.btn_cancel_request:
+                        declineRequest(position);
+                        break;
+                    case R.id.img_icon_decline:
+                        declineRequest(position);
+                        break;
+                    case R.id.img_icon_accept:
+                        acceptRequest(position);
+                        break;
+                }
+            }
+        });
+
 
         friendItems = new ArrayList<FriendItem>();
         friendAdapter = new FriendAdapter(this, friendItems);
@@ -85,11 +119,122 @@ public class FriendRequestActivity extends AppCompatActivity  {
 
     }
 
+    private void acceptRequest(final int position) {
+        /*ProgressDialog.startProgressDialog(FriendRequestActivity.this, "Đang xử lý");
+
+        final List<String> channelUserIds = new ArrayList<String>();
+        channelUserIds.add(friendId);
+        SendBird.addFriends(channelUserIds, new SendBird.AddFriendsHandler() {
+            @Override
+            public void onResult(List<User> list, SendBirdException e) {
+                if(e != null){
+                    Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    channelUserIds.add(userId);
+                    GroupChannelParams params = new GroupChannelParams()
+                            .setPublic(false)
+                            .setEphemeral(true)
+                            .setDistinct(true)
+                            .addUserIds(channelUserIds);
+                    GroupChannel.createChannel(params, new GroupChannel.GroupChannelCreateHandler() {
+                        @Override
+                        public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                            String mChannelId = groupChannel.getUrl();
+                            createChannelInDatabase(position, mChannelId);
+
+                            //remove request in recycler view
+                            requestItems.remove(position);
+                            requestAdapter.notifyDataSetChanged();
+                        }
+                    });
+
+                }
+            }
+        });*/
+    }
+
+    private void createChannelInDatabase(final int pos, final String channelId) {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                PersonProfileActivity.ACCEPT_REQUEST_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Toast.makeText(FriendRequestActivity.this, response, Toast.LENGTH_LONG).show();
+                        ProgressDialog.dismissProgressDialog();
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(FriendRequestActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                        ProgressDialog.dismissProgressDialog();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("requestId", requestItems.get(pos).getId());
+                params.put("channelId", channelId);
+                params.put("userId", userId);
+                params.put("friendId", requestItems.get(pos).getFromId());
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
+    }
+
+    private void declineRequest(final int position) {
+        ProgressDialog.startProgressDialog(FriendRequestActivity.this, "Đang xử lý");
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                PersonProfileActivity.CANCEL_REQUEST_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        ProgressDialog.dismissProgressDialog();
+                        if(response.equals("success")){
+                            Toast.makeText(FriendRequestActivity.this, "Đã hủy yêu cầu", Toast.LENGTH_LONG).show();
+                        }
+                        else {
+                            Toast.makeText(FriendRequestActivity.this, "Lời mời kết bạn đã bị xóa hoặc không tồn tại", Toast.LENGTH_LONG).show();
+                        }
+
+                        requestItems.remove(position);
+                        requestAdapter.notifyDataSetChanged();
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(FriendRequestActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                        ProgressDialog.dismissProgressDialog();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("requestId", requestItems.get(position).getId());
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
+    }
+
+
+
     private void loadCurrentSearch() {
         friendItems.add(new FriendItem("1", "Phuc", ""));
-        friendItems.add(new FriendItem("2", "Dung", ""));
-        friendItems.add(new FriendItem("3", "Cuong", ""));
-        friendItems.add(new FriendItem("4", "Toan", ""));
+        friendItems.add(new FriendItem("65", "Dung", ""));
+        friendItems.add(new FriendItem("69", "Cuong", ""));
+        friendItems.add(new FriendItem("70", "Toan", ""));
         friendAdapter.notifyDataSetChanged();
 
         TextView tv_recent_search = findViewById(R.id.tv_recent_search);
@@ -123,10 +268,12 @@ public class FriendRequestActivity extends AppCompatActivity  {
     protected void onStart() {
         super.onStart();
 
-        retrieveRequests(currentUid);
+        retrieveRequests(userId);
     }
 
-    private void retrieveRequests(String Uid) {
+    private void removeItem(){}
+
+    private void retrieveRequests(final String Uid) {
         final Gson gson =new Gson();
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         StringRequest request =new StringRequest(Request.Method.POST,
@@ -134,6 +281,7 @@ public class FriendRequestActivity extends AppCompatActivity  {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        Log.d("Tag", response);
                         try {
                             JSONArray jsonArray = new JSONArray(response);
                             TextView tv_requests = findViewById(R.id.tv_request_list);
@@ -159,7 +307,7 @@ public class FriendRequestActivity extends AppCompatActivity  {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
-                params.put("id","1");
+                params.put("id",Uid);
                 return params;
             }
         };
@@ -168,4 +316,10 @@ public class FriendRequestActivity extends AppCompatActivity  {
         requestQueue.add(request);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        requestItems.clear();
+        requestAdapter.notifyDataSetChanged();
+    }
 }
