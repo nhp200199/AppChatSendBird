@@ -28,11 +28,15 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.sendbird.android.BaseChannel;
+import com.sendbird.android.BaseMessage;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.GroupChannelParams;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
+import com.sendbird.android.UserMessage;
+import com.sendbird.android.UserMessageParams;
 import com.sendbird.android.shadow.com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -46,19 +50,21 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FriendRequestActivity extends AppCompatActivity  {
-    public static final String GET_REQUESTS_URL = "http://192.168.100.5:8080/SendBird/GetRequests.php";
-    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.5:8080/SendBird/GetRecentSearch.php";
+    public static final String GET_REQUESTS_URL = "http://192.168.100.6:8080/SendBird/GetRequests.php";
+    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.6:8080/SendBird/GetRecentSearch.php";
+    public static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_FRIEND_REQUEST";
     private EditText edt_find_user;
     private ImageView img_back;
     private RecyclerView requests_container;
     private RecyclerView recent_search_container;
 
     private String userId;
-    private String friendId;
+    private String channel;
     private ArrayList<RequestItem> requestItems;
     private RequestAdapter requestAdapter;
     private ArrayList<FriendItem> friendItems;
     private FriendAdapter friendAdapter;
+
 
 
     @Override
@@ -120,15 +126,16 @@ public class FriendRequestActivity extends AppCompatActivity  {
     }
 
     private void acceptRequest(final int position) {
-        /*ProgressDialog.startProgressDialog(FriendRequestActivity.this, "Đang xử lý");
+        ProgressDialog.startProgressDialog(FriendRequestActivity.this, "Đang xử lý");
 
         final List<String> channelUserIds = new ArrayList<String>();
-        channelUserIds.add(friendId);
+        channelUserIds.add(requestItems.get(position).getFromId().trim());
         SendBird.addFriends(channelUserIds, new SendBird.AddFriendsHandler() {
             @Override
             public void onResult(List<User> list, SendBirdException e) {
                 if(e != null){
                     Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                    ProgressDialog.dismissProgressDialog();
                 }
                 else{
                     channelUserIds.add(userId);
@@ -143,15 +150,12 @@ public class FriendRequestActivity extends AppCompatActivity  {
                             String mChannelId = groupChannel.getUrl();
                             createChannelInDatabase(position, mChannelId);
 
-                            //remove request in recycler view
-                            requestItems.remove(position);
-                            requestAdapter.notifyDataSetChanged();
                         }
                     });
 
                 }
             }
-        });*/
+        });
     }
 
     private void createChannelInDatabase(final int pos, final String channelId) {
@@ -163,6 +167,12 @@ public class FriendRequestActivity extends AppCompatActivity  {
                     public void onResponse(String response) {
                         Toast.makeText(FriendRequestActivity.this, response, Toast.LENGTH_LONG).show();
                         ProgressDialog.dismissProgressDialog();
+
+                        channel = response;
+                        //remove request in recycler view
+                        requestItems.remove(pos);
+                        requestAdapter.notifyDataSetChanged();
+                        notifyFriend("notify", "add",channelId);
                     }
                 }
                 ,
@@ -271,7 +281,33 @@ public class FriendRequestActivity extends AppCompatActivity  {
         retrieveRequests(userId);
     }
 
-    private void removeItem(){}
+    private void notifyFriend(final String type, final String message, String mChannelId) {
+        GroupChannel.getChannel(mChannelId, new GroupChannel.GroupChannelGetHandler() {
+            @Override
+            public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                if(e == null){
+                    UserMessageParams userMessageParams = new UserMessageParams()
+                            .setCustomType(type)
+                            .setMessage(message);
+
+                    groupChannel.sendUserMessage(userMessageParams, new BaseChannel.SendUserMessageHandler() {
+                        @Override
+                        public void onSent(UserMessage userMessage, SendBirdException e) {
+                            if(e != null){
+                                Log.d("Tag", e.getMessage());
+                                Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                            }
+
+                        }
+                    });
+                }
+                else{
+                    Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
     private void retrieveRequests(final String Uid) {
         final Gson gson =new Gson();
@@ -322,4 +358,85 @@ public class FriendRequestActivity extends AppCompatActivity  {
         requestItems.clear();
         requestAdapter.notifyDataSetChanged();
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SendBird.removeChannelHandler(CHANNEL_HANDLER_ID);
+        SendBird.removeChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SendBird.addChannelHandler(CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                if(baseChannel.getUrl().equals(channel)){
+                    String message = baseMessage.getMessage();
+                    String type =baseMessage.getCustomType();
+
+                    if(type.equals("notify")){
+                        if(message.equals("add")){
+                            List<String> id = new ArrayList<>();
+                            id.add(baseMessage.getSender().getUserId());
+                            SendBird.addFriends(id, new SendBird.AddFriendsHandler() {
+                                @Override
+                                public void onResult(List<User> list, SendBirdException e) {
+                                    if(e!=null){
+                                        Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+                        }
+
+                    }
+                }
+            }
+        });
+        SendBird.addChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                String senderId = baseMessage.getSender().getUserId();
+                String type = baseMessage.getCustomType();
+                String message = baseMessage.getMessage();
+                if(type.equals("notify")){
+                    if(message.equals("add")){
+                        int index = -1;
+                        for (RequestItem item: requestItems){
+                            if(item.getFromId().equals(baseMessage.getSender().getUserId())){
+                                index = requestItems.indexOf(item);
+                                break;
+                            }
+                        }
+                        requestItems.remove(index);
+                        requestAdapter.notifyDataSetChanged();
+
+                        List<String> friend = new ArrayList<>();
+                        friend.add(baseMessage.getSender().getUserId());
+
+                        SendBird.addFriends(friend, new SendBird.AddFriendsHandler() {
+                            @Override
+                            public void onResult(List<User> list, SendBirdException e) {
+                                if(e!=null)
+                                    Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                    if(message.equals("delete")){
+                        SendBird.deleteFriend(senderId, new SendBird.DeleteFriendHandler() {
+                            @Override
+                            public void onResult(SendBirdException e) {
+                                if(e!=null)
+                                    Toast.makeText(FriendRequestActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+
+            }
+        });
+    }
+
 }
