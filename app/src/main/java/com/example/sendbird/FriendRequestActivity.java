@@ -50,8 +50,8 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FriendRequestActivity extends AppCompatActivity  {
-    public static final String GET_REQUESTS_URL = "http://192.168.100.6:8080/SendBird/GetRequests.php";
-    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.6:8080/SendBird/GetRecentSearch.php";
+    public static final String GET_REQUESTS_URL = "http://192.168.100.8:8080/SendBird/GetRequests.php";
+    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.8:8080/SendBird/GetRecentSearch.php";
     public static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_FRIEND_REQUEST";
     private EditText edt_find_user;
     private ImageView img_back;
@@ -121,7 +121,7 @@ public class FriendRequestActivity extends AppCompatActivity  {
             }
         });
 
-        loadCurrentSearch();
+        loadCurrentSearch(userId);
 
     }
 
@@ -240,16 +240,48 @@ public class FriendRequestActivity extends AppCompatActivity  {
 
 
 
-    private void loadCurrentSearch() {
-        friendItems.add(new FriendItem("1", "Phuc", ""));
-        friendItems.add(new FriendItem("65", "Dung", ""));
-        friendItems.add(new FriendItem("69", "Cuong", ""));
-        friendItems.add(new FriendItem("70", "Toan", ""));
-        friendAdapter.notifyDataSetChanged();
-
-        TextView tv_recent_search = findViewById(R.id.tv_recent_search);
-        tv_recent_search.setVisibility(View.VISIBLE);
-        recent_search_container.setVisibility(View.VISIBLE);
+    private void loadCurrentSearch(final String Uid) {
+        final Gson gson =new Gson();
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                GET_RECENT_SEARCH_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d("Tag", response);
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+                            TextView tv_recent_search = findViewById(R.id.tv_recent_search);
+                            tv_recent_search.setVisibility(View.VISIBLE);
+                            recent_search_container.setVisibility(View.VISIBLE);
+                            for (int i = 0; i< jsonArray.length(); i++){
+                                FriendItem message = gson.fromJson(jsonArray.getJSONObject(i).toString(), FriendItem.class);
+                                friendItems.add(message);
+                            }
+                            requestAdapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(FriendRequestActivity.this, response, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(FriendRequestActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("id",Uid);
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
     }
 
     private void connectViews() {

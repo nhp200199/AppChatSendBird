@@ -25,6 +25,12 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public static final int TYPETWO=2;
     private ArrayList<RequestItem> requestItems;
     private Context mContext;
+    private Listener mListener;
+
+    interface Listener{
+        void onClick(int viewType, int position);
+    }
+
     public RequestAdapter(ArrayList<RequestItem> list, Context context)
     {
         this.requestItems = list;
@@ -69,7 +75,7 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
-    private void initLayoutReceive(ReceivedHolder holder, int position) {
+    private void initLayoutReceive(ReceivedHolder holder, final int position) {
         LinearLayout linearLayout = holder.linearLayout;
         CircleImageView civ_avatar = linearLayout.findViewById(R.id.civ_avatar);
         TextView tv_userName = linearLayout.findViewById(R.id.tv_username);
@@ -84,24 +90,22 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         img_accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                acceptRequest();
+                if (mListener != null) {
+                    mListener.onClick(v.getId() ,position);
+                }
             }
         });
         img_decline.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                declineRequest();
+                if (mListener != null) {
+                    mListener.onClick(v.getId() ,position);
+                }
             }
         });
     }
 
-    private void declineRequest() {
-    }
-
-    private void acceptRequest() {
-    }
-
-    private void initLayoutSend(SentHolder holder, int position) {
+    private void initLayoutSend(SentHolder holder, final int position) {
         LinearLayout linearLayout = holder.linearLayout;
         CircleImageView civ_avatar = linearLayout.findViewById(R.id.civ_avatar);
         TextView tv_userName = linearLayout.findViewById(R.id.tv_username);
@@ -115,13 +119,14 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         btn_cancelRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cancelRequest();
+                if (mListener != null) {
+                    mListener.onClick(v.getId() ,position);
+                }
             }
         });
     }
 
-    private void cancelRequest() {
-    }
+
 
     @Override
     public int getItemCount() {
@@ -143,6 +148,9 @@ public class RequestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             super(itemView);
             this.linearLayout = itemView;
         }
+    }
 
+    public void setListener(Listener listener) {
+        mListener = listener;
     }
 }
