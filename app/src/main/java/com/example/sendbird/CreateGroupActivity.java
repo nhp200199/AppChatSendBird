@@ -21,6 +21,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.sendbird.android.BaseChannel;
+import com.sendbird.android.BaseMessage;
+import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
+import com.sendbird.android.User;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -172,5 +178,49 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
             }
         }
         return -1;
+    }
+
+    @Override
+    protected  void onResume() {
+        SendBird.addChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                String senderId = baseMessage.getSender().getUserId();
+                String type = baseMessage.getCustomType();
+                String message = baseMessage.getMessage();
+                if (type.equals("notify")) {
+                    if (message.equals("add")) {
+                        List<String> friend = new ArrayList<>();
+                        friend.add(baseMessage.getSender().getUserId());
+
+                        SendBird.addFriends(friend, new SendBird.AddFriendsHandler() {
+                            @Override
+                            public void onResult(List<User> list, SendBirdException e) {
+                                if (e != null)
+                                    Toast.makeText(CreateGroupActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                    if (message.equals("delete")) {
+                        SendBird.deleteFriend(senderId, new SendBird.DeleteFriendHandler() {
+                            @Override
+                            public void onResult(SendBirdException e) {
+                                if (e != null)
+                                    Toast.makeText(CreateGroupActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+
+            }
+        });
+        super.onResume();
+
+    }
+
+    @Override
+    protected void onPause() {
+        SendBird.removeChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID);
+        super.onPause();
     }
 }

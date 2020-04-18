@@ -55,7 +55,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatWindowActivity extends AppCompatActivity implements View.OnClickListener {
-    public static final String GET_MESSAGES_URL = "http://192.168.100.8:8080/SendBird/getMessageItem.php";
+    public static final String GET_MESSAGES_URL = "http://192.168.100.10:8080/SendBird/getMessageItem.php";
     public static final String EXTRA_COVERSATION_ID = "ConversationID";
     public static final String EXTRA_COVERSATION_NAME = "ConversationName";
     public static final String EXTRA_COVERSATION_AVA = "ConversationAva";

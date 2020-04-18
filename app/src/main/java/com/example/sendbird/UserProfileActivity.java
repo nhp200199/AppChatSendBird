@@ -38,6 +38,8 @@ import com.bumptech.glide.Glide;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.sendbird.android.BaseChannel;
+import com.sendbird.android.BaseMessage;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
@@ -57,8 +59,8 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserProfileActivity extends AppCompatActivity implements View.OnClickListener{
-    public static final String USER_PROFILE_URL = "http://192.168.100.8:8080/SendBird/UserProfile.php";
-    public static final String EDIT_USER_PROFILE_URL = "http://192.168.100.8:8080/SendBird/EditProfile.php";
+    public static final String USER_PROFILE_URL = "http://192.168.100.10:8080/SendBird/UserProfile.php";
+    public static final String EDIT_USER_PROFILE_URL = "http://192.168.100.10:8080/SendBird/EditProfile.php";
     private String userID = "";
     private SharedPreferences sharedPreferences;
 
@@ -283,7 +285,49 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
     }
     private void showDialogChangeName() {
     }
+    @Override
+    protected  void onResume() {
+        SendBird.addChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                String senderId = baseMessage.getSender().getUserId();
+                String type = baseMessage.getCustomType();
+                String message = baseMessage.getMessage();
+                if (type.equals("notify")) {
+                    if (message.equals("add")) {
+                        List<String> friend = new ArrayList<>();
+                        friend.add(baseMessage.getSender().getUserId());
 
+                        SendBird.addFriends(friend, new SendBird.AddFriendsHandler() {
+                            @Override
+                            public void onResult(List<User> list, SendBirdException e) {
+                                if (e != null)
+                                    Toast.makeText(UserProfileActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                    if (message.equals("delete")) {
+                        SendBird.deleteFriend(senderId, new SendBird.DeleteFriendHandler() {
+                            @Override
+                            public void onResult(SendBirdException e) {
+                                if (e != null)
+                                    Toast.makeText(UserProfileActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+
+            }
+        });
+        super.onResume();
+
+    }
+
+    @Override
+    protected void onPause() {
+        SendBird.removeChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID);
+        super.onPause();
+    }
     /*
     private class CustomDialog extends AppCompatDialogFragment{
         @NonNull

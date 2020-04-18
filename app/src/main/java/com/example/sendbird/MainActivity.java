@@ -33,15 +33,21 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sendbird.android.ApplicationUserListQuery;
+import com.sendbird.android.BaseChannel;
+import com.sendbird.android.BaseMessage;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.SendBird;
+import com.sendbird.android.SendBirdException;
+import com.sendbird.android.User;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -186,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onPause() {
         super.onPause();
         updateCurrentUserState("offline");
+        SendBird.removeChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID);
     }
 
     @Override
@@ -250,5 +257,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             view = new View(activity);
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    @Override
+    protected void onResume(){
+        SendBird.addChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                String senderId = baseMessage.getSender().getUserId();
+                String type = baseMessage.getCustomType();
+                String message = baseMessage.getMessage();
+                if(type.equals("notify")){
+                    if(message.equals("add")){
+                        List<String> friend = new ArrayList<>();
+                        friend.add(baseMessage.getSender().getUserId());
+
+                        SendBird.addFriends(friend, new SendBird.AddFriendsHandler() {
+                            @Override
+                            public void onResult(List<User> list, SendBirdException e) {
+                                if(e!=null)
+                                    Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                    if(message.equals("delete")){
+                        SendBird.deleteFriend(senderId, new SendBird.DeleteFriendHandler() {
+                            @Override
+                            public void onResult(SendBirdException e) {
+                                if(e!=null)
+                                    Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+
+            }
+        });
+
+
+        super.onResume();
     }
 }
