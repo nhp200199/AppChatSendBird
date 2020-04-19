@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +36,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sendbird.android.ApplicationUserListQuery;
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
+import com.sendbird.android.FriendListQuery;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
@@ -64,6 +66,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String userID;
     private SharedPreferences sharedPreferences;
 
+    private ArrayList<ContactItem> allFriends;
+    private ArrayList<ContactItem> onlineFriends;
+
+    Bundle bundle = new Bundle();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,8 +78,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         connectViews();
         sharedPreferences = getSharedPreferences("user infor", MODE_PRIVATE);
         userID = sharedPreferences.getString("id", null);
-        Bundle bundle = new Bundle();
-        bundle.putString("id", userID);
+
+        SendBird.init(RegisterActivity.appID, MainActivity.this);
+        SendBird.connect(userID, new SendBird.ConnectHandler() {
+            @Override
+            public void onConnected(User user, SendBirdException e) {
+                if(e != null)
+                    Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                else {
+                    Toast.makeText(MainActivity.this, user.getConnectionStatus().name(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+        allFriends = new ArrayList<>();
+        onlineFriends = new ArrayList<>();
+        SendBird.createFriendListQuery().next(new FriendListQuery.FriendListQueryResultHandler() {
+            @Override
+            public void onResult(List<User> list, SendBirdException e) {
+                if(e!=null){
+                    Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    if(list.size() ==0)
+                        return;
+                    else{
+                        for(User a: list){
+                            allFriends.add(new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl()));
+
+                            if(a.getLastSeenAt() == 0){
+                                onlineFriends.add(new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl()));
+                            }
+                        }
+
+
+                        bundle.putParcelableArrayList("all friends", allFriends);
+                        bundle.putParcelableArrayList("onl friends", onlineFriends);
+                    }
+                }
+
+            }
+        });
+
+
+
         Fragment defaultFragment = new ConversationFragment();
         defaultFragment.setArguments(bundle);
 
@@ -161,7 +211,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
             }
             Bundle bundle = new Bundle();
-            bundle.putString("id", userID);
+            bundle.putParcelableArrayList("all friends", allFriends);
+            bundle.putParcelableArrayList("onl friends", onlineFriends);
             selectedFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment)
                     .commit();

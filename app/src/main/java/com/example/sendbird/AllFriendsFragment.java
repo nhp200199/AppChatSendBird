@@ -47,11 +47,12 @@ public class AllFriendsFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_online_friends, container, false);
         friendsContainer = v.findViewById(R.id.friends_container);
-        items = new ArrayList<ContactItem>();
+        Bundle bundle = getArguments();
+        items = bundle.getParcelableArrayList("all friends");
         adapter = new ContactItemAdapter(getActivity(), 1, items);
 
         friendsContainer.setAdapter(adapter);
-        /*
+
         friendsContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -63,9 +64,6 @@ public class AllFriendsFragment extends Fragment {
                 startActivity(intent);
             }
         });
-
-         */
-
         Log.d("TAG", "AllFriendsFragment OnCreateView");
         return v;
     }

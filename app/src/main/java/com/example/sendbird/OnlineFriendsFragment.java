@@ -44,7 +44,8 @@ public class OnlineFriendsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_online_friends, container, false);
 
         friendsContainer = v.findViewById(R.id.friends_container);
-        items = new ArrayList<ContactItem>();
+        Bundle bundle = getArguments();
+        items = bundle.getParcelableArrayList("onl friends");
         adapter = new ContactItemAdapter(getActivity(), 1, items);
 
         friendsContainer.setAdapter(adapter);

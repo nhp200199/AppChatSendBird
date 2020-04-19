@@ -1,8 +1,11 @@
 package com.example.sendbird;
 
-public class ContactItem {
+import android.os.Parcel;
+import android.os.Parcelable;
 
-    public String uid,name, avatar;
+public class ContactItem implements Parcelable {
+
+    public String id,name, avatar;
 
     public ContactItem()
     {
@@ -12,7 +15,7 @@ public class ContactItem {
     public ContactItem(String uid, String name, String avatar) {
         this.name = name;
         this.avatar = avatar;
-        this.uid = uid;
+        this.id = uid;
     }
 
     public String getName() {
@@ -20,11 +23,11 @@ public class ContactItem {
     }
 
     public String getUid() {
-        return uid;
+        return id;
     }
 
     public void setUid(String uid) {
-        this.uid = uid;
+        this.id = uid;
     }
 
     public void setName(String name) {
@@ -38,4 +41,33 @@ public class ContactItem {
     public void setAvatar(String avatar) {
         this.avatar = avatar;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(name);
+        dest.writeString(avatar);
+    }
+
+    public static final Parcelable.Creator<ContactItem>CREATOR = new Parcelable.Creator<ContactItem>(){
+
+        @Override
+        public ContactItem createFromParcel(Parcel source) {
+            String id = source.readString();
+            String name = source.readString();
+            String avatar = source.readString();
+
+            return new ContactItem(id, name, avatar);
+        }
+
+        @Override
+        public ContactItem[] newArray(int size) {
+            return new ContactItem[size];
+        }
+    };
 }

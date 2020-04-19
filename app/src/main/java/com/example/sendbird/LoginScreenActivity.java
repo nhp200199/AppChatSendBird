@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LoginScreenActivity extends AppCompatActivity implements View.OnClickListener{
-    public static final String LOGIN_URL = "http://192.168.100.10:8080/SendBird/AccountLogin.php";
+    public static final String LOGIN_URL = "http://192.168.100.11:8080/SendBird/AccountLogin.php";
     private String userID = "";
 
     private EditText edt_username;
@@ -165,11 +165,12 @@ public class LoginScreenActivity extends AppCompatActivity implements View.OnCli
                             editor.putString("id", userID);
                             editor.commit();
 
-                            SendBird.connect(userID, new SendBird.ConnectHandler() {
+                            ConnectionManager.login(userID, new SendBird.ConnectHandler() {
                                 @Override
                                 public void onConnected(User user, SendBirdException e) {
                                     if(e != null){
                                         Toast.makeText(LoginScreenActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+
                                     }
                                     else{
                                         ProgressDialog.dismissProgressDialog();

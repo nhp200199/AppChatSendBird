@@ -38,7 +38,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
     public static final String appID = "9DCA326D-1743-490F-90B8-2AA2B29CE71B";
-    public static final String REGISTER_URL = "http://192.168.100.10:8080/SendBird/AccountRegister.php";
+    public static final String REGISTER_URL = "http://192.168.100.11:8080/SendBird/AccountRegister.php";
 
     private EditText edt_username;
     private EditText edt_password;
