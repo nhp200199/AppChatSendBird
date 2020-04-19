@@ -52,12 +52,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class PersonProfileActivity extends AppCompatActivity {
     public static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_PERSON_PROFILE";
 
-    public static final String REQUEST_STATUS_URL="http://192.168.100.10:8080/SendBird/GetRequestStatus.php";
-    public static final String SEND_REQUEST_URL="http://192.168.100.10:8080/SendBird/SendRequest.php";
-    public static final String ACCEPT_REQUEST_URL="http://192.168.100.10:8080/SendBird/AcceptRequest.php";
-    public static final String CANCEL_REQUEST_URL="http://192.168.100.10:8080/SendBird/CancelRequest.php";
-    public static final String REMOVE_CONTACT_URL="http://192.168.100.10:8080/SendBird/RemoveContact.php";
-    public static final String GET_CHANNEL_URL="http://192.168.100.10:8080/SendBird/GetChannel.php";
+    public static final String REQUEST_STATUS_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
+    public static final String SEND_REQUEST_URL="http://192.168.100.11:8080/SendBird/SendRequest.php";
+    public static final String ACCEPT_REQUEST_URL="http://192.168.100.11:8080/SendBird/AcceptRequest.php";
+    public static final String CANCEL_REQUEST_URL="http://192.168.100.11:8080/SendBird/CancelRequest.php";
+    public static final String REMOVE_CONTACT_URL="http://192.168.100.11:8080/SendBird/RemoveContact.php";
+    public static final String GET_CHANNEL_URL="http://192.168.100.11:8080/SendBird/GetChannel.php";
     public static final String EXTRA_ID = "FriendId";
 
     boolean isFriend[] = {false};
@@ -282,7 +282,6 @@ public class PersonProfileActivity extends AppCompatActivity {
                                         }
                                     }
                                 }
-
                             });
                         }
                         else{
@@ -642,6 +641,30 @@ public class PersonProfileActivity extends AppCompatActivity {
                     }
                 }
 
+            }
+        });
+
+        SendBird.addChannelHandler(FriendRequestActivity.CHANNEL_HANDLER_ID, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                    String message = baseMessage.getMessage();
+                    String type =baseMessage.getCustomType();
+
+                    if(type.equals("notify")){
+                        if(message.equals("add")){
+                            List<String> id = new ArrayList<>();
+                            id.add(baseMessage.getSender().getUserId());
+                            SendBird.addFriends(id, new SendBird.AddFriendsHandler() {
+                                @Override
+                                public void onResult(List<User> list, SendBirdException e) {
+                                    if(e!=null){
+                                        Toast.makeText(PersonProfileActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+                        }
+
+                    }
             }
         });
     }
