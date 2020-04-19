@@ -68,56 +68,7 @@
             android:layout_toRightOf="@id/linearInfor"
             android:src="@drawable/ic_status_circle"
             android:visibility="invisible"/>
-        <!--
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true">
-
-            <ImageButton
-                android:id="@+id/imgBtn_Call"
-                android:layout_width="@dimen/IconWidth"
-                android:layout_height="26dp"
-                android:layout_margin="8dp"
-                android:background="#FFFFFF"
-                android:src="@android:drawable/ic_menu_call" />
-
-            <ImageButton
-                android:id="@+id/imgBtn_Videocall"
-                android:layout_width="@dimen/IconWidth"
-                android:layout_height="26dp"
-                android:layout_margin="8dp"
-                android:background="#FFFFFF"
-                android:src="@drawable/ic_video_box" />
-
-        </LinearLayout>
-        -->
-
     </RelativeLayout>
-
-
-    <TextView
-        android:layout_below="@id/header"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/SubStandardColor"/>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/header"
-        android:layout_above="@id/footer">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rcv_message_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:paddingBottom="8dp" />
-    </LinearLayout>
-
 
 
     <LinearLayout
@@ -133,18 +84,6 @@
         android:paddingBottom="20dp"
 
         >
-    <!--
-        <ImageButton
-            android:id="@+id/imgBtn_openPicture"
-            android:layout_width="@dimen/IconWidth"
-            android:layout_height="@dimen/IconHeight"
-            android:layout_marginRight="8dp"
-            android:background="@color/White"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_image_box" />
-    -->
-
-
         <ImageButton
             android:id="@+id/imgbtn_send_picture"
             android:layout_width="32dp"
@@ -198,7 +137,23 @@
     </LinearLayout>
 
 
+    <TextView
+        android:layout_below="@id/header"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/SubStandardColor"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/header"
+        android:layout_above="@id/footer">
 
-
-
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcv_message_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:paddingBottom="8dp" />
+    </LinearLayout>
 </RelativeLayout>
