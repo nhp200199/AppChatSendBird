@@ -7,39 +7,78 @@
     android:orientation="vertical"
     tools:context=".FindUserActivity">
 
-    <EditText
-        android:id="@+id/edt_find_user"
-        android:layout_width="350dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
-        android:paddingLeft="10dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:hint="Tìm kiếm hội thoại"
-        android:background="@drawable/edt_round_gray"/>
-    <Button
-        android:id="@+id/btn_sthing"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="b"/>
-    <LinearLayout
-        android:id="@+id/search_results_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="invisible">
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/edt_find_user"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Hello"/>
+            android:layout_weight="15"
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/friends_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20dp"/>
+            android:background="@drawable/edt_round_gray"
+            android:hint="Nhập tên bạn bè"
+            android:paddingLeft="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp" />
 
+        <Button
+            android:id="@+id/btn_search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:background="@android:drawable/ic_menu_search" />
     </LinearLayout>
 
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp">
+
+        <ProgressBar
+            android:id="@+id/rotateloading"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="center_horizontal"
+            android:indeterminate="false"
+            android:indeterminateDrawable="@drawable/progress"
+            android:indeterminateDuration="720"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/tv_no_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Không tìm thấy kết quả"
+            android:textSize="16sp"
+            android:visibility="invisible" />
+
+
+        <LinearLayout
+            android:id="@+id/search_results_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="invisible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:text="Kết quả" />
+
+            <ListView
+                android:id="@+id/friends_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="20dp" />
+
+        </LinearLayout>
+    </FrameLayout>
 </LinearLayout>

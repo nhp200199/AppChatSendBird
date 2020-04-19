@@ -9,6 +9,10 @@ public class FriendItem {
         this.avatar = avatar;
     }
 
+    public FriendItem() {
+
+    }
+
     public String getName() {
         return name;
     }
