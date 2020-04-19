@@ -121,7 +121,7 @@ public class FriendRequestActivity extends AppCompatActivity  {
             }
         });
 
-        loadCurrentSearch(userId);
+
 
     }
 
@@ -258,7 +258,7 @@ public class FriendRequestActivity extends AppCompatActivity  {
                                 FriendItem message = gson.fromJson(jsonArray.getJSONObject(i).toString(), FriendItem.class);
                                 friendItems.add(message);
                             }
-                            requestAdapter.notifyDataSetChanged();
+                            friendAdapter.notifyDataSetChanged();
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(FriendRequestActivity.this, response, Toast.LENGTH_LONG).show();
@@ -310,7 +310,10 @@ public class FriendRequestActivity extends AppCompatActivity  {
     protected void onStart() {
         super.onStart();
 
+        friendItems.clear();
+        friendAdapter.notifyDataSetChanged();
         retrieveRequests(userId);
+        loadCurrentSearch(userId);
     }
 
     private void notifyFriend(final String type, final String message, String mChannelId) {

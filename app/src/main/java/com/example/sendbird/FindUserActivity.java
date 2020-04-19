@@ -1,8 +1,11 @@
 package com.example.sendbird;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -40,6 +43,7 @@ import java.util.Map;
 public class FindUserActivity extends AppCompatActivity implements View.OnClickListener{
 
     public static final String FIND_USER_URL = "http://192.168.100.11:8080/SendBird/FindUser.php";
+    public static final String ADD_CURRENT_SEARCH = "http://192.168.100.11:8080/SendBird/AddCurrentSearch.php";
 
     private ListView friend_container;
     private EditText edt_find_friend;
@@ -50,11 +54,17 @@ public class FindUserActivity extends AppCompatActivity implements View.OnClickL
     private ArrayList<ContactItem> mFriendList;
     private ContactItemAdapter mAdapter;
 
+    private SharedPreferences sharedPreferences;
+    private String userId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find_user);
         connectViews();
+
+        sharedPreferences = getSharedPreferences("user infor", MODE_PRIVATE);
+        userId = sharedPreferences.getString("id", null);
 
         btnSearch.setOnClickListener(this);
     }
@@ -70,14 +80,53 @@ public class FindUserActivity extends AppCompatActivity implements View.OnClickL
         mFriendList = new ArrayList<ContactItem>();
         mAdapter = new ContactItemAdapter(FindUserActivity.this, 0,mFriendList);
         friend_container.setAdapter(mAdapter);
+        friend_container.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                addToCurrentSearch(mFriendList.get(position).getUid());
+                goToPersonProfile(mFriendList.get(position).getUid());
+            }
+        });
 
+    }
+
+    private void goToPersonProfile(String uid) {
+        Intent intent = new Intent(FindUserActivity.this, PersonProfileActivity.class);
+        intent.putExtra(PersonProfileActivity.EXTRA_ID, uid);
+        startActivity(intent);
+
+    }
+
+    private void addToCurrentSearch(final String uid) {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request = new StringRequest(Request.Method.POST, ADD_CURRENT_SEARCH,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        if(response.equals("fail"))
+                            Toast.makeText(FindUserActivity.this, "Đã xảy ra lỗi", Toast.LENGTH_SHORT).show();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("error", error.toString());
+                Toast.makeText(FindUserActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("id", userId);
+                params.put("findId", uid);
+                return params;
+            }
+        };
+        requestQueue.add(request);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-
-            case R.id.edt_find_user:
 
             case R.id.btn_search:
                 if(edt_find_friend.getText().toString().trim().equals(""))
