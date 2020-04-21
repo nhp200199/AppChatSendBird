@@ -38,6 +38,8 @@ import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
 import com.sendbird.android.FriendListQuery;
 import com.sendbird.android.GroupChannel;
+import com.sendbird.android.GroupChannelListQuery;
+import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
@@ -104,15 +106,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if(list.size() ==0)
                         return;
                     else{
-                        for(User a: list){
-                            allFriends.add(new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl()));
+                        List<String> userId = new ArrayList<>();
+                        for(final User a: list){
+                            GroupChannelListQuery query = GroupChannel.createMyGroupChannelListQuery();
+                            userId.add(a.getUserId());
+                            query.setUserIdsExactFilter(userId);
+                            query.setIncludeEmpty(true);
+                            query.next(new GroupChannelListQuery.GroupChannelListQueryResultHandler() {
+                                @Override
+                                public void onResult(final List<GroupChannel> list, SendBirdException e) {
+                                    if(e!=null)
+                                        Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                                    else{
+                                        ContactItem contactItem = new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl());
+                                        contactItem.setChannel(list.get(0).getUrl());
+                                        allFriends.add(contactItem);
 
-                            if(a.getLastSeenAt() == 0){
-                                onlineFriends.add(new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl()));
-                            }
+                                        list.get(0).refresh(new GroupChannel.GroupChannelRefreshHandler() {
+                                            @Override
+                                            public void onResult(SendBirdException e) {
+                                                List<Member> members =list.get(0).getMembers();
+                                                for(Member member: members){
+                                                    if(!member.getUserId().equals(userID) && member.getConnectionStatus().equals(User.ConnectionStatus.ONLINE)){
+                                                        onlineFriends.add(new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl()));
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                            userId.clear();
                         }
-
-
                         bundle.putParcelableArrayList("all friends", allFriends);
                         bundle.putParcelableArrayList("onl friends", onlineFriends);
                     }

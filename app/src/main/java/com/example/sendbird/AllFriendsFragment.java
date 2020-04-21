@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -29,10 +30,6 @@ public class AllFriendsFragment extends Fragment {
 
     private ContactItemAdapter adapter;
     private List<ContactItem> items;
-
-    private String currentUid;
-
-
 
     public AllFriendsFragment() {
         // Required empty public constructor
@@ -56,12 +53,14 @@ public class AllFriendsFragment extends Fragment {
         friendsContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), ChatWindowActivity.class);
-                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_ID, items.get(position).getUid());
-                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_NAME, items.get(position).getName());
-                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_AVA, items.get(position).getAvatar());
+//                Intent intent = new Intent(getActivity(), ChatWindowActivity.class);
+//                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_ID, items.get(position).getUid());
+//                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_NAME, items.get(position).getName());
+//                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_AVA, items.get(position).getAvatar());
+//
+//                startActivity(intent);
 
-                startActivity(intent);
+                Toast.makeText(getActivity(), items.get(position).getChannel(), Toast.LENGTH_SHORT).show();
             }
         });
         Log.d("TAG", "AllFriendsFragment OnCreateView");

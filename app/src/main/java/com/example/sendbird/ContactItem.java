@@ -5,11 +5,10 @@ import android.os.Parcelable;
 
 public class ContactItem implements Parcelable {
 
-    public String id,name, avatar;
+    public String id,name, avatar, mChannel;
 
     public ContactItem()
     {
-
     }
 
     public ContactItem(String uid, String name, String avatar) {
@@ -45,6 +44,14 @@ public class ContactItem implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
+    }
+
+    public String getChannel() {
+        return mChannel;
+    }
+
+    public void setChannel(String channel) {
+        mChannel = channel;
     }
 
     @Override
