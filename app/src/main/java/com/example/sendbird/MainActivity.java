@@ -125,7 +125,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                 List<Member> members =list.get(0).getMembers();
                                                 for(Member member: members){
                                                     if(!member.getUserId().equals(userID) && member.getConnectionStatus().equals(User.ConnectionStatus.ONLINE)){
-                                                        onlineFriends.add(new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl()));
+                                                        ContactItem contactItem = new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl());
+                                                        contactItem.setChannel(list.get(0).getUrl());
+                                                        onlineFriends.add(contactItem);
                                                     }
                                                 }
                                             }
