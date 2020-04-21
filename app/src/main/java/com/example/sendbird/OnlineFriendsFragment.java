@@ -49,7 +49,6 @@ public class OnlineFriendsFragment extends Fragment {
         adapter = new ContactItemAdapter(getActivity(), 1, items);
 
         friendsContainer.setAdapter(adapter);
-        /*
         friendsContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -57,12 +56,12 @@ public class OnlineFriendsFragment extends Fragment {
                 intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_ID, items.get(position).getUid());
                 intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_NAME, items.get(position).getName());
                 intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_AVA, items.get(position).getAvatar());
+                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_CHANNEL, items.get(position).getChannel());
 
                 startActivity(intent);
             }
         });
 
-         */
 
         Log.d("TAG", "AllFriendsFragment OnCreateView");
 

@@ -87,9 +87,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onConnected(User user, SendBirdException e) {
                 if(e != null)
                     Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
-                else {
-                    Toast.makeText(MainActivity.this, user.getConnectionStatus().name(), Toast.LENGTH_SHORT).show();
-                }
             }
         });
 

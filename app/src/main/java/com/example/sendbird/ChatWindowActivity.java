@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -35,9 +36,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
+import com.sendbird.android.ApplicationUserListQuery;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
+import com.sendbird.android.UserListQuery;
 import com.sendbird.android.shadow.com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -50,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -59,6 +63,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     public static final String EXTRA_COVERSATION_ID = "ConversationID";
     public static final String EXTRA_COVERSATION_NAME = "ConversationName";
     public static final String EXTRA_COVERSATION_AVA = "ConversationAva";
+    public static final String EXTRA_COVERSATION_CHANNEL = "ConversationChannel";
     public static final int ACTION_GET_PICTURE = 113;
     public static final String LIST_STATE = "list state";
 
@@ -148,7 +153,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         if (getIntent().hasExtra(EXTRA_COVERSATION_ID)) {
             name = getIntent().getStringExtra(EXTRA_COVERSATION_NAME);
             avatar = getIntent().getStringExtra(EXTRA_COVERSATION_AVA);
-            channelId = getIntent().getStringExtra(EXTRA_COVERSATION_ID);
+            channelId = getIntent().getStringExtra(EXTRA_COVERSATION_CHANNEL);
 
             tv_username.setText(name);
             Glide.with(this)
@@ -291,7 +296,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     protected void onStart() {
         super.onStart();
         Log.d("Tag", "Chat Window Started");
-        updateCurrentUserState("online");
+        updateCurrentUserState();
         loadChatHistory();
 
     }
@@ -340,11 +345,10 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onPause() {
         super.onPause();
-        updateCurrentUserState("offline");
     }
 
-    private void updateCurrentUserState(String state) {
-        String currentDate, currentTime;
+    private void updateCurrentUserState() {
+        /*String currentDate, currentTime;
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdfCurrentDate = new SimpleDateFormat("dd/MMM/YYYY");
@@ -356,7 +360,42 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         HashMap<String, Object> userStateMap = new HashMap<>();
         userStateMap.put("status", state);
         userStateMap.put("date", currentDate);
-        userStateMap.put("time", currentTime);
+        userStateMap.put("time", currentTime);*/
+
+        final Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                List<String> userId = new ArrayList<>();
+                userId.add(getIntent().getStringExtra(EXTRA_COVERSATION_ID));
+                ApplicationUserListQuery query = SendBird.createApplicationUserListQuery();
+                query.setUserIdsFilter(userId);
+                query.next(new UserListQuery.UserListQueryResultHandler() {
+                    @Override
+                    public void onResult(List<User> list, SendBirdException e) {
+                        if(list.get(0).getConnectionStatus().name().equals("ONLINE")){
+                            tv_online_status.setVisibility(View.VISIBLE);
+                            tv_online_status.setText("Đang hoạt động");
+                            img_online_status.setVisibility(View.VISIBLE);
+                        }
+                        else{
+                            displayLastSeen(list.get(0).getLastSeenAt());
+                            img_online_status.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                });
+                handler.postDelayed(this, 60000);
+            }
+        });
+
+
+    }
+
+    private void displayLastSeen(long lastSeen) {
+        long now = System.currentTimeMillis();
+        int second = (int) (now  - lastSeen)/1000;
+        tv_online_status.setText("Hoạt động " + String.valueOf((second/60) + 1) + " phút trước");
+        tv_online_status.setVisibility(View.VISIBLE);
 
     }
 

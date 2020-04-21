@@ -53,14 +53,13 @@ public class AllFriendsFragment extends Fragment {
         friendsContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(getActivity(), ChatWindowActivity.class);
-//                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_ID, items.get(position).getUid());
-//                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_NAME, items.get(position).getName());
-//                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_AVA, items.get(position).getAvatar());
-//
-//                startActivity(intent);
+                Intent intent = new Intent(getActivity(), ChatWindowActivity.class);
+                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_ID, items.get(position).getUid());
+                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_NAME, items.get(position).getName());
+                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_AVA, items.get(position).getAvatar());
+                intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_CHANNEL, items.get(position).getChannel());
 
-                Toast.makeText(getActivity(), items.get(position).getChannel(), Toast.LENGTH_SHORT).show();
+                startActivity(intent);
             }
         });
         Log.d("TAG", "AllFriendsFragment OnCreateView");
