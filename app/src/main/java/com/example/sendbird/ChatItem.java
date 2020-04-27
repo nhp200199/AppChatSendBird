@@ -22,6 +22,13 @@ public class ChatItem {
         this.date =date;
     }
     public ChatItem(){}
+    public ChatItem(String id, String from, String message, String type, String date){
+        this.id = id;
+        this.type = type;
+        this.message = message;
+        this.from = from;
+        this.date =date;
+    }
 
     public String getId() {
         return id;

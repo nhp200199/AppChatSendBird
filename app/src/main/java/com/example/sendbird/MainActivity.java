@@ -57,6 +57,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    public static final String TAG = MainActivity.class.getSimpleName();
 
     private CircleImageView civ_userImg;
     private FrameLayout fragment_container;
@@ -70,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ArrayList<ContactItem> allFriends;
     private ArrayList<ContactItem> onlineFriends;
+
+    private ConversationFragment mConversationFragment;
 
     Bundle bundle = new Bundle();
 
@@ -139,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         bundle.putParcelableArrayList("all friends", allFriends);
                         bundle.putParcelableArrayList("onl friends", onlineFriends);
+
                     }
                 }
 
@@ -146,11 +150,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
+        bundle.putString("id", userID);
+        mConversationFragment.setArguments(bundle);
 
-        Fragment defaultFragment = new ConversationFragment();
-        defaultFragment.setArguments(bundle);
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, defaultFragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, mConversationFragment)
+                .addToBackStack(null)
+                .commit();
 
         civ_userImg.setOnClickListener(this);
         img_add_user.setOnClickListener(this);
@@ -214,8 +219,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     img_add_user.setVisibility(View.GONE);
                     img_add_group.setVisibility(View.GONE);
 
-                    selectedFragment = new ConversationFragment();
-                    break;
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, mConversationFragment)
+                            .addToBackStack(null)
+                            .commit();
+                    return true;
 
                 case R.id.nav_directory:
                     selectedFragment = new DirectoryFragment();
@@ -237,8 +245,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Bundle bundle = new Bundle();
             bundle.putParcelableArrayList("all friends", allFriends);
             bundle.putParcelableArrayList("onl friends", onlineFriends);
+            bundle.putString("id", userID);
             selectedFragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment)
+                    .addToBackStack(null)
                     .commit();
             return true;
         }
@@ -252,6 +262,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_title = findViewById(R.id.tv_title);
         img_add_group = findViewById(R.id.img_add_group);
         img_add_user = findViewById(R.id.img_add_user);
+
+        mConversationFragment = ConversationFragment.newInstance();
     }
 
     @Override
@@ -260,12 +272,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         retrieveUserInfo();
 
         updateCurrentUserState("online");
-        Log.d("Tag", "Main Started");
+        Log.d(TAG, "onStart");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause");
         updateCurrentUserState("offline");
         SendBird.removeChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID);
     }
@@ -273,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d("Tag", "Main On Destroyed");
+        Log.d(TAG ,"onDestroy");
 
         updateCurrentUserState("offline");
     }

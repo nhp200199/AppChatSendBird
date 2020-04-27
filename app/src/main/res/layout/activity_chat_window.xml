@@ -146,14 +146,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/header"
+        android:orientation="vertical"
         android:layout_above="@id/footer">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rcv_message_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/text_group_chat_current_event"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Terry and Harry are typing"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:visibility="gone"/>
     </LinearLayout>
 </RelativeLayout>

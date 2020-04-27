@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,10 +38,16 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.sendbird.android.ApplicationUserListQuery;
+import com.sendbird.android.BaseChannel;
+import com.sendbird.android.BaseMessage;
+import com.sendbird.android.GroupChannel;
+import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 import com.sendbird.android.UserListQuery;
+import com.sendbird.android.UserMessage;
+import com.sendbird.android.UserMessageParams;
 import com.sendbird.android.shadow.com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -66,10 +73,12 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     public static final String EXTRA_COVERSATION_CHANNEL = "ConversationChannel";
     public static final int ACTION_GET_PICTURE = 113;
     public static final String LIST_STATE = "list state";
+    public static final String CHANNEL_HANDlER = "ChatWindow Channel Handler";
 
-    private String channelId, name, avatar, currentUID;
+    private String channelId, name, avatar, userId;
     private String checker = "", myUrl = "";
     private Uri fileUri;
+    private GroupChannel mGoupChannel;
 
     private TextView tv_username;
     private CircleImageView civ_avatar;
@@ -82,6 +91,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     private ImageButton ib_send_picture;
     private ImageButton ib_send_file;
     private ImageButton ib_menu;
+    private TextView mCurrentEventText;
 
     private ArrayList<ChatItem> chatItems;
     private ChatAdapter adapter;
@@ -96,6 +106,10 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         setContentView(R.layout.activity_chat_window);
         connectViews();
 
+        SharedPreferences sharedPreferences = getSharedPreferences("user infor", MODE_PRIVATE);
+        userId = sharedPreferences.getString("id", null);
+
+
         //disable send button
         ib_send.setEnabled(false);
         ImageViewCompat.setImageTintList(ib_send, ColorStateList.valueOf(ContextCompat.getColor(ChatWindowActivity.this, R.color.Grey)));
@@ -106,7 +120,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
         chatItems = new ArrayList<ChatItem>();
 
-        adapter = new ChatAdapter(this, chatItems, "1");
+        adapter = new ChatAdapter(this, chatItems, userId);
         linearLayoutManager.setStackFromEnd(false);
         message_container.setLayoutManager(linearLayoutManager);
         message_container.setAdapter(adapter);
@@ -149,11 +163,19 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
     }
 
+
+
     private void loadUserInfo() {
         if (getIntent().hasExtra(EXTRA_COVERSATION_ID)) {
             name = getIntent().getStringExtra(EXTRA_COVERSATION_NAME);
             avatar = getIntent().getStringExtra(EXTRA_COVERSATION_AVA);
             channelId = getIntent().getStringExtra(EXTRA_COVERSATION_CHANNEL);
+            GroupChannel.getChannel(channelId, new GroupChannel.GroupChannelGetHandler() {
+                @Override
+                public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                    mGoupChannel = groupChannel;
+                }
+            });
 
             tv_username.setText(name);
             Glide.with(this)
@@ -172,6 +194,8 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             if (s.toString().trim().length() > 0) {
+                setTypingStatus(true);
+
                 ib_send.setImageResource(R.drawable.ic_send);
                 ImageViewCompat.setImageTintList(ib_send, ColorStateList.valueOf(ContextCompat.getColor(ChatWindowActivity.this, R.color.blue)));
 
@@ -180,6 +204,8 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 ib_send_file.setVisibility(View.GONE);
                 ib_menu.setVisibility(View.VISIBLE);
             } else {
+                setTypingStatus(false);
+
                 ib_send.setImageResource(R.drawable.ic_send);
                 ImageViewCompat.setImageTintList(ib_send, ColorStateList.valueOf(ContextCompat.getColor(ChatWindowActivity.this, R.color.Grey)));
 
@@ -196,6 +222,12 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         }
     };
 
+    private void setTypingStatus(boolean typing) {
+        if(typing)
+            mGoupChannel.startTyping();
+        else mGoupChannel.endTyping();
+    }
+
     private void connectViews() {
 
         tv_username = findViewById(R.id.tv_friend_name);
@@ -209,6 +241,8 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         ib_send_picture = findViewById(R.id.imgbtn_send_picture);
         ib_send_file = findViewById(R.id.imgbtn_send_file);
         ib_menu = findViewById(R.id.imgbtn_media_menu);
+
+        mCurrentEventText = (TextView)findViewById(R.id.text_group_chat_current_event);
     }
 
     @Override
@@ -224,13 +258,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 sendMessage();
 
                 //scroll rcv to the last item when send button is click
-                message_container.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount() - 1);
-                    }
-                }, 100);
-
+                //message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount() - 1);
                 edt_message.setText("");
                 break;
 
@@ -269,6 +297,17 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         SimpleDateFormat sdf_time = new SimpleDateFormat("hh:mm");
         String date = sdf_date.format(calendar.getTime());
         String time = sdf_time.format(calendar.getTime());
+
+        UserMessageParams params = new UserMessageParams()
+                .setMessage(edt_message.getText().toString())
+                .setCustomType("text");
+
+        mGoupChannel.sendUserMessage(params, new BaseChannel.SendUserMessageHandler() {
+            @Override
+            public void onSent(UserMessage userMessage, SendBirdException e) {
+                displaySend((BaseMessage)userMessage);
+            }
+        });
     }
 
 
@@ -301,6 +340,8 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
     }
 
+
+
     private void loadChatHistory() {
         final Gson gson =new Gson();
         RequestQueue requestQueue = Volley.newRequestQueue(this);
@@ -332,7 +373,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
-                params.put("channelId","1");
+                params.put("channelId",channelId);
                 return params;
             }
         };
@@ -345,6 +386,9 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onPause() {
         super.onPause();
+
+        SendBird.removeChannelHandler(CHANNEL_HANDlER);
+        mGoupChannel.endTyping();
     }
 
     private void updateCurrentUserState() {
@@ -442,5 +486,63 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         if (rcv_state != null) {
             linearLayoutManager.onRestoreInstanceState(rcv_state);
         }
+
+        SendBird.addChannelHandler(CHANNEL_HANDlER, new SendBird.ChannelHandler() {
+            @Override
+            public void onMessageReceived(BaseChannel baseChannel, BaseMessage baseMessage) {
+                String channel = baseChannel.getUrl();
+                String sender = baseMessage.getSender().getUserId();
+                if(channel.equals(channelId)){
+                    if(baseMessage.getCustomType().equals("text")){
+                        displayReceive(baseMessage);
+                    }
+                }
+            }
+
+            @Override
+            public void onTypingStatusUpdated(GroupChannel channel) {
+                if (channel.getUrl().equals(channelId)) {
+                    List<Member> typingUsers = channel.getTypingMembers();
+                    displayTyping(typingUsers);
+                }
+            }
+        });
+    }
+
+    private void displayTyping(List<Member> typingUsers) {
+        if (typingUsers.size() > 0) {
+            mCurrentEventText.setVisibility(View.VISIBLE);
+            String string;
+
+            if (typingUsers.size() == 1) {
+                string = String.format(getString(R.string.user_typing), typingUsers.get(0).getNickname());
+            } else if (typingUsers.size() == 2) {
+                string = String.format(getString(R.string.two_users_typing), typingUsers.get(0).getNickname(), typingUsers.get(1).getNickname());
+            } else {
+                string = getString(R.string.users_typing);
+            }
+            mCurrentEventText.setText(string);
+        } else {
+            mCurrentEventText.setVisibility(View.GONE);
+        }
+    }
+
+    private void displayReceive(BaseMessage baseMessage) {
+        String time  = new SimpleDateFormat("dd-MM HH:mm").format(new Date(baseMessage.getCreatedAt()));
+        ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                baseMessage.getSender().getNickname(), baseMessage.getSender().getProfileUrl(),
+                baseMessage.getMessage(), baseMessage.getCustomType(), time);
+
+        chatItems.add(chatItem);
+        adapter.notifyDataSetChanged();
+    }
+
+    private void displaySend(BaseMessage baseMessage) {
+        String time  = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(baseMessage.getCreatedAt()));
+        ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                baseMessage.getMessage(), baseMessage.getCustomType(), time);
+
+        chatItems.add(chatItem);
+        adapter.notifyDataSetChanged();
     }
 }

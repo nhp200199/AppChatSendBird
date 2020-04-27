@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">SendBird</string>
+
+    <!-- Group Channel -->
+    <string name="user_typing">%s is typing</string>
+    <string name="two_users_typing">%s and %s are typing</string>
+    <string name="users_typing"> Multiple users are typing</string>
 </resources>
