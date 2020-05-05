@@ -52,12 +52,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class PersonProfileActivity extends AppCompatActivity {
     public static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_PERSON_PROFILE";
 
-    public static final String REQUEST_STATUS_URL="http://192.168.100.11:8080/SendBird/GetRequestStatus.php";
-    public static final String SEND_REQUEST_URL="http://192.168.100.11:8080/SendBird/SendRequest.php";
-    public static final String ACCEPT_REQUEST_URL="http://192.168.100.11:8080/SendBird/AcceptRequest.php";
-    public static final String CANCEL_REQUEST_URL="http://192.168.100.11:8080/SendBird/CancelRequest.php";
-    public static final String REMOVE_CONTACT_URL="http://192.168.100.11:8080/SendBird/RemoveContact.php";
-    public static final String GET_CHANNEL_URL="http://192.168.100.11:8080/SendBird/GetChannel.php";
+    public static final String REQUEST_STATUS_URL="http://192.168.100.12:8080/SendBird/GetRequestStatus.php";
+    public static final String SEND_REQUEST_URL="http://192.168.100.12:8080/SendBird/SendRequest.php";
+    public static final String ACCEPT_REQUEST_URL="http://192.168.100.12:8080/SendBird/AcceptRequest.php";
+    public static final String CANCEL_REQUEST_URL="http://192.168.100.12:8080/SendBird/CancelRequest.php";
+    public static final String REMOVE_CONTACT_URL="http://192.168.100.12:8080/SendBird/RemoveContact.php";
+    public static final String GET_CHANNEL_URL="http://192.168.100.12:8080/SendBird/GetChannel.php";
     public static final String EXTRA_ID = "FriendId";
 
     boolean isFriend[] = {false};

@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/tv_conversation_content"
             android:layout_marginLeft="15dp"
-            android:layout_toRightOf="@id/tv_conversation_content"
+            android:layout_alignParentRight="true"
             android:text="date"
             android:textSize="16sp" />
 

@@ -59,8 +59,8 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class UserProfileActivity extends AppCompatActivity implements View.OnClickListener{
-    public static final String USER_PROFILE_URL = "http://192.168.100.11:8080/SendBird/UserProfile.php";
-    public static final String EDIT_USER_PROFILE_URL = "http://192.168.100.11:8080/SendBird/EditProfile.php";
+    public static final String USER_PROFILE_URL = "http://192.168.100.12:8080/SendBird/UserProfile.php";
+    public static final String EDIT_USER_PROFILE_URL = "http://192.168.100.12:8080/SendBird/EditProfile.php";
     private String userID = "";
     private SharedPreferences sharedPreferences;
 

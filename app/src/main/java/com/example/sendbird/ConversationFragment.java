@@ -18,6 +18,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
@@ -26,12 +35,18 @@ import com.sendbird.android.GroupChannel;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.UserMessage;
+import com.sendbird.android.shadow.com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,6 +54,7 @@ import java.util.List;
 public class ConversationFragment extends Fragment {
     public static final String TAG = ConversationFragment.class.getSimpleName();
     public static final String CHANNEL_HANDLER = "Conversation Channel Handler";
+    public static final String URL_GET_CONVERSATIONS = "http://192.168.100.12:8080/SendBird/getConversationItem.php";
     private ConversationAdapter adapter;
     private RecyclerView conversationContainer;
     private ArrayList<ConversationItem> conversationItems;
@@ -47,12 +63,11 @@ public class ConversationFragment extends Fragment {
     public LinearLayoutManager mLinearLayoutManager;
 
     public ConversationFragment() {
-        setArguments(new Bundle());
+
     }
     public static ConversationFragment newInstance(){
-            ConversationFragment fragment = new ConversationFragment();
-            fragment.setArguments(new Bundle());
-            return fragment;
+        ConversationFragment fragment = new ConversationFragment();
+        return fragment;
     }
 
     @Override
@@ -72,7 +87,6 @@ public class ConversationFragment extends Fragment {
         
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_conversation, container, false);
-
 
         adapter = new ConversationAdapter(getActivity(), conversationItems);
 
@@ -101,7 +115,6 @@ public class ConversationFragment extends Fragment {
     public void onStart() {
         super.onStart();
         Log.d(TAG, "onStart");
-        retrieveConversations();
 
         SendBird.addChannelHandler(CHANNEL_HANDLER, new SendBird.ChannelHandler() {
             @Override
@@ -143,7 +156,7 @@ public class ConversationFragment extends Fragment {
                 String channelId = channel.getUrl();
                 String name = baseMessage.getSender().getNickname();
                 String avatar = baseMessage.getSender().getProfileUrl();
-                String time = new SimpleDateFormat("hh:mm").format(new Date(baseMessage.getCreatedAt()));
+                String time = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(baseMessage.getCreatedAt()));
                 String message = "";
 
                 if(senderId.equals(userID))
@@ -198,11 +211,54 @@ public class ConversationFragment extends Fragment {
     }
 
     private void retrieveConversations() {
+        final Gson gson =new Gson();
+        RequestQueue requestQueue = Volley.newRequestQueue(getActivity());
+        StringRequest request =new StringRequest(Request.Method.POST,
+                URL_GET_CONVERSATIONS,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+                            for (int i = 0; i< jsonArray.length(); i++){
+                                ConversationItem message = gson.fromJson(jsonArray.getJSONObject(i).toString(), ConversationItem.class);
+                                conversationItems.add(message);
+                            }
+                            adapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getActivity(), response, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getActivity(), error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("id",userID);
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        retrieveConversations();
     }
 
     @Override

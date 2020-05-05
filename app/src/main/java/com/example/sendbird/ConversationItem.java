@@ -76,13 +76,6 @@ public class ConversationItem implements Parcelable {
         this.avatar = avatar;
     }
 
-    public ConversationItem(String name, String avatar, String date, String content) {
-        this.name = name;
-        this.avatar = avatar;
-        this.time = date;
-        this.lastMessage = content;
-    }
-
     public ConversationItem(String channelId, String name, String avatar, String time, String lastMessage) {
         this.channelId = channelId;
         this.name = name;

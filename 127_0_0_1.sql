@@ -186,7 +186,7 @@ INSERT INTO `users` (`id`, `nickname`, `password`, `email`, `gender`, `avatar`, 
 (3, 'Toan', '1', 'toan@gmail.com', 'Nam', 'toan', 'toan', '2020-03-11', 'dd', 1),
 (4, 'Minh', '1', 'minh@gmail.com', 'Nam', 'minh', 'minh', '2020-03-03', '3r3', 1),
 (5, 'HPhuc', '1', 'hphuc@gmail.com', '2', 'hphuc', 'hphuc', '2020-03-02', '342', 1),
-(65, 'Phuc', '1', 'nhp200199@gmail.com', 'nam', 'http://192.168.100.11:8080/SendBird/upload/65avatar.jpg', 'http://192.168.100.11:8080/SendBird/upload/65cover.jpg', '1999-01-20', '11b9ca22be8133507a18158f95af63f7', 1);
+(65, 'Phuc', '1', 'nhp200199@gmail.com', 'nam', 'http://192.168.100.12:8080/SendBird/upload/65avatar.jpg', 'http://192.168.100.12:8080/SendBird/upload/65cover.jpg', '1999-01-20', '11b9ca22be8133507a18158f95af63f7', 1);
 
 --
 -- Indexes for dumped tables

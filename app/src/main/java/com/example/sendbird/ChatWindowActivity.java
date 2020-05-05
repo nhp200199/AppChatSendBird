@@ -66,7 +66,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatWindowActivity extends AppCompatActivity implements View.OnClickListener {
-    public static final String GET_MESSAGES_URL = "http://192.168.100.11:8080/SendBird/getMessageItem.php";
+    public static final String GET_MESSAGES_URL = "http://192.168.100.12:8080/SendBird/getMessageItem.php";
     public static final String EXTRA_COVERSATION_ID = "ConversationID";
     public static final String EXTRA_COVERSATION_NAME = "ConversationName";
     public static final String EXTRA_COVERSATION_AVA = "ConversationAva";
@@ -74,6 +74,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     public static final int ACTION_GET_PICTURE = 113;
     public static final String LIST_STATE = "list state";
     public static final String CHANNEL_HANDlER = "ChatWindow Channel Handler";
+    public static final String SEND_TO_DATABASE = "http://192.168.100.12:8080/SendBird/SaveMessage.php";
 
     private String channelId, name, avatar, userId;
     private String checker = "", myUrl = "";
@@ -161,6 +162,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         ib_send_file.setOnClickListener(this);
         ib_send_picture.setOnClickListener(this);
 
+        loadChatHistory();
     }
 
 
@@ -245,6 +247,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         mCurrentEventText = (TextView)findViewById(R.id.text_group_chat_current_event);
     }
 
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -258,7 +261,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 sendMessage();
 
                 //scroll rcv to the last item when send button is click
-                //message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount() - 1);
+                message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount() - 1);
                 edt_message.setText("");
                 break;
 
@@ -292,12 +295,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
 
     private void sendMessage() {
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf_date = new SimpleDateFormat("dd/MMM/YYYY");
-        SimpleDateFormat sdf_time = new SimpleDateFormat("hh:mm");
-        String date = sdf_date.format(calendar.getTime());
-        String time = sdf_time.format(calendar.getTime());
-
         UserMessageParams params = new UserMessageParams()
                 .setMessage(edt_message.getText().toString())
                 .setCustomType("text");
@@ -305,9 +302,47 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         mGoupChannel.sendUserMessage(params, new BaseChannel.SendUserMessageHandler() {
             @Override
             public void onSent(UserMessage userMessage, SendBirdException e) {
+                sendToDatabase((BaseMessage) userMessage);
                 displaySend((BaseMessage)userMessage);
             }
         });
+    }
+
+    private void sendToDatabase(final BaseMessage userMessage) {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                SEND_TO_DATABASE,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        if(response.equals("fail"))
+                            Toast.makeText(ChatWindowActivity.this, "Đã xảy ra lỗi", Toast.LENGTH_LONG).show();
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(ChatWindowActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+                        .format(new Date(userMessage.getCreatedAt()));
+
+                Map<String,String> params =new HashMap<>();
+                params.put("fromId", userId);
+                params.put("channelId", channelId);
+                params.put("message", userMessage.getMessage());
+                params.put("date", time);
+                params.put("type","text");
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
     }
 
 
@@ -336,8 +371,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         super.onStart();
         Log.d("Tag", "Chat Window Started");
         updateCurrentUserState();
-        loadChatHistory();
-
     }
 
 
@@ -357,6 +390,10 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                                 chatItems.add(message);
                             }
                             adapter.notifyDataSetChanged();
+
+                            if(chatItems.size()>0){
+                                message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount() - 1);
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                             Toast.makeText(ChatWindowActivity.this, response, Toast.LENGTH_LONG).show();
@@ -389,23 +426,10 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
         SendBird.removeChannelHandler(CHANNEL_HANDlER);
         mGoupChannel.endTyping();
+        adapter.notifyDataSetChanged();
     }
 
     private void updateCurrentUserState() {
-        /*String currentDate, currentTime;
-
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdfCurrentDate = new SimpleDateFormat("dd/MMM/YYYY");
-        SimpleDateFormat sdfCurrentTime = new SimpleDateFormat("hh:mm");
-
-        currentDate = sdfCurrentDate.format(calendar.getTime());
-        currentTime = sdfCurrentTime.format(calendar.getTime());
-
-        HashMap<String, Object> userStateMap = new HashMap<>();
-        userStateMap.put("status", state);
-        userStateMap.put("date", currentDate);
-        userStateMap.put("time", currentTime);*/
-
         final Handler handler = new Handler();
         handler.post(new Runnable() {
             @Override
@@ -468,8 +492,8 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        rcv_state = linearLayoutManager.onSaveInstanceState();
-        outState.putParcelable(LIST_STATE, rcv_state);
+//        rcv_state = linearLayoutManager.onSaveInstanceState();
+//        outState.putParcelable(LIST_STATE, rcv_state);
 
 
     }
@@ -477,15 +501,15 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         super.onRestoreInstanceState(state);
 
         // Retrieve list state and list/item positions
-        rcv_state = state.getParcelable(LIST_STATE);
+//        rcv_state = state.getParcelable(LIST_STATE);
     }
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (rcv_state != null) {
-            linearLayoutManager.onRestoreInstanceState(rcv_state);
-        }
+//        if (rcv_state != null) {
+//            linearLayoutManager.onRestoreInstanceState(rcv_state);
+//        }
 
         SendBird.addChannelHandler(CHANNEL_HANDlER, new SendBird.ChannelHandler() {
             @Override
@@ -544,5 +568,11 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
         chatItems.add(chatItem);
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("TAG", "onDestroy");
     }
 }

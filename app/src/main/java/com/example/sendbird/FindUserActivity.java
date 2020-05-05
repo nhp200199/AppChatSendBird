@@ -42,8 +42,8 @@ import java.util.Map;
 
 public class FindUserActivity extends AppCompatActivity implements View.OnClickListener{
 
-    public static final String FIND_USER_URL = "http://192.168.100.11:8080/SendBird/FindUser.php";
-    public static final String ADD_CURRENT_SEARCH = "http://192.168.100.11:8080/SendBird/AddCurrentSearch.php";
+    public static final String FIND_USER_URL = "http://192.168.100.12:8080/SendBird/FindUser.php";
+    public static final String ADD_CURRENT_SEARCH = "http://192.168.100.12:8080/SendBird/AddCurrentSearch.php";
 
     private ListView friend_container;
     private EditText edt_find_friend;

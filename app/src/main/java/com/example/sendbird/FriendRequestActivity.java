@@ -50,8 +50,8 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FriendRequestActivity extends AppCompatActivity  {
-    public static final String GET_REQUESTS_URL = "http://192.168.100.11:8080/SendBird/GetRequests.php";
-    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.11:8080/SendBird/GetRecentSearch.php";
+    public static final String GET_REQUESTS_URL = "http://192.168.100.12:8080/SendBird/GetRequests.php";
+    public static final String GET_RECENT_SEARCH_URL = "http://192.168.100.12:8080/SendBird/GetRecentSearch.php";
     public static final String CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_FRIEND_REQUEST";
     private EditText edt_find_user;
     private ImageView img_back;

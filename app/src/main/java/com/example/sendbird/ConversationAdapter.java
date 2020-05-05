@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,7 +16,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,9 +52,19 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
         TextView tv_conversationTime = (TextView) linearLayout.findViewById(R.id.tv_conversation_time);
         CircleImageView civ_conversationImg = (CircleImageView) linearLayout.findViewById(R.id.civ_conversation_avatar);
 
+        SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat out = new SimpleDateFormat("HH:mm");
+
+        try {
+            Date date= in.parse(conversationItems.get(position).getDate());
+            tv_conversationTime.setText(out.format(date));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(mContext, e.toString(), Toast.LENGTH_SHORT).show();
+        }
+
         tv_conversationContent.setText(conversationItems.get(position).getLastMessage());
         tv_conversationName.setText(conversationItems.get(position).getName());
-        tv_conversationTime.setText(conversationItems.get(position).getDate());
         Glide.with(mContext)
                 .load(conversationItems.get(position).getAvatar())
                 .thumbnail(0.5f)
