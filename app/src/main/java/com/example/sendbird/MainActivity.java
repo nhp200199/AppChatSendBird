@@ -384,4 +384,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onResume();
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 }

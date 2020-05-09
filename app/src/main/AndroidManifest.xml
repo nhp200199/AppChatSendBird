@@ -35,6 +35,7 @@
             android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".PersonProfileActivity"/>
         <activity android:name=".CreateGroupActivity" android:windowSoftInputMode="adjustPan"/>
+        <activity android:name=".FullViewActivity"/>
     </application>
 
 </manifest>

@@ -56,6 +56,11 @@
         card_view:cardCornerRadius="8dp"
         card_view:cardElevation="0dp">
 
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:visibility="visible"/>
         <ImageView
             android:id="@+id/img_message"
             android:layout_width="match_parent"

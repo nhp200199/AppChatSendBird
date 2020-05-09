@@ -1,13 +1,18 @@
 package com.example.sendbird;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -22,6 +27,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,6 +46,8 @@ import com.bumptech.glide.Glide;
 import com.sendbird.android.ApplicationUserListQuery;
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
+import com.sendbird.android.FileMessage;
+import com.sendbird.android.FileMessageParams;
 import com.sendbird.android.GroupChannel;
 import com.sendbird.android.Member;
 import com.sendbird.android.SendBird;
@@ -54,12 +62,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +82,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     public static final String EXTRA_COVERSATION_AVA = "ConversationAva";
     public static final String EXTRA_COVERSATION_CHANNEL = "ConversationChannel";
     public static final int ACTION_GET_PICTURE = 113;
+    private int STORAGE_PERMISSION_CODE = 1;
     public static final String LIST_STATE = "list state";
     public static final String CHANNEL_HANDlER = "ChatWindow Channel Handler";
     public static final String SEND_TO_DATABASE = "http://192.168.100.12:8080/SendBird/SaveMessage.php";
@@ -110,6 +121,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         SharedPreferences sharedPreferences = getSharedPreferences("user infor", MODE_PRIVATE);
         userId = sharedPreferences.getString("id", null);
 
+        LinearLayout linearLayout = findViewById(R.id.linearInfor);
 
         //disable send button
         ib_send.setEnabled(false);
@@ -130,6 +142,9 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
             public void onClick(int position) {
                 if (chatItems.get(position).getType().equals("image")) {
                     String imageUrl = chatItems.get(position).getMessage();
+                    Intent intent = new Intent(ChatWindowActivity.this, FullViewActivity.class);
+                    intent.putExtra(FullViewActivity.EXTRA_IMAGE_URL, imageUrl);
+                    startActivity(intent);
                 }
                 else{
                     TextView dateTime = message_container.findViewHolderForAdapterPosition(position).itemView.findViewById(R.id.tv_date_time);
@@ -161,6 +176,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         ib_menu.setOnClickListener(this);
         ib_send_file.setOnClickListener(this);
         ib_send_picture.setOnClickListener(this);
+        linearLayout.setOnClickListener(this);
 
         loadChatHistory();
     }
@@ -230,6 +246,23 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         else mGoupChannel.endTyping();
     }
 
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(ChatWindowActivity.this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                STORAGE_PERMISSION_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == STORAGE_PERMISSION_CODE){
+            if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                getImageFromGallery();
+            else{
+                Toast.makeText(ChatWindowActivity.this, "Bạn cần cấp quyền để chia sẻ hình ảnh", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     private void connectViews() {
 
         tv_username = findViewById(R.id.tv_friend_name);
@@ -278,17 +311,23 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
             case R.id.imgbtn_send_picture:
                 checker = "image";
-                getImageFromGallery();
-                break;
-
-            case R.id.imgbtn_send_file:
+                if(ContextCompat.checkSelfPermission(ChatWindowActivity.this,
+                        Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                    getImageFromGallery();
+                }else{
+                    requestStoragePermission();
+                }
                 break;
 
             case R.id.imgbtn_media_menu:
                 ib_send_picture.setVisibility(View.VISIBLE);
                 ib_send_file.setVisibility(View.VISIBLE);
                 ib_menu.setVisibility(View.GONE);
-
+                break;
+            case R.id.linearInfor:
+                Intent intent = new Intent(this, PersonProfileActivity.class);
+                intent.putExtra(PersonProfileActivity.EXTRA_ID, getIntent().getStringExtra(EXTRA_COVERSATION_ID));
+                startActivity(intent);
                 break;
         }
     }
@@ -302,8 +341,8 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         mGoupChannel.sendUserMessage(params, new BaseChannel.SendUserMessageHandler() {
             @Override
             public void onSent(UserMessage userMessage, SendBirdException e) {
-                sendToDatabase((BaseMessage) userMessage);
-                displaySend((BaseMessage)userMessage);
+                sendToDatabase(userMessage);
+                displaySend(userMessage);
             }
         });
     }
@@ -334,9 +373,9 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 Map<String,String> params =new HashMap<>();
                 params.put("fromId", userId);
                 params.put("channelId", channelId);
-                params.put("message", userMessage.getMessage());
+                params.put("message", userMessage.getCustomType().equals("text")? userMessage.getMessage():((FileMessage) userMessage).getUrl());
                 params.put("date", time);
-                params.put("type","text");
+                params.put("type",userMessage.getCustomType().equals("text")? "text":"image");
                 return params;
             }
         };
@@ -481,11 +520,35 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
         if (requestCode == ACTION_GET_PICTURE && resultCode == RESULT_OK && data != null & data.getData() != null) {
             fileUri = data.getData();
+            File file = new File(RealPathUlti.getRealPathFromURI_API19(ChatWindowActivity.this, fileUri));
 
-            if (checker.equals("image")) {
-            }
+            FileMessageParams params = new FileMessageParams()
+                    .setFile(file)
+                    .setCustomType("image")
+                    .setFileSize(500);
+            mGoupChannel.sendFileMessage(params, new BaseChannel.SendFileMessageHandler() {
+                @Override
+                public void onSent(FileMessage fileMessage, SendBirdException e) {
+                    sendToDatabase(fileMessage);
+                    displaySend(fileMessage);
+                }
+            });
 
         }
+    }
+
+    private String getRealPathFromURI(Uri fileUri) {
+        String result;
+        Cursor cursor = getContentResolver().query(fileUri, null, null, null, null);
+        if (cursor == null) { // Source is Dropbox or other similar local file path
+            result = fileUri.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
     }
 
     @Override
@@ -517,9 +580,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 String channel = baseChannel.getUrl();
                 String sender = baseMessage.getSender().getUserId();
                 if(channel.equals(channelId)){
-                    if(baseMessage.getCustomType().equals("text")){
-                        displayReceive(baseMessage);
-                    }
+                    displayReceive(baseMessage);
                 }
             }
 
@@ -552,22 +613,40 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void displayReceive(BaseMessage baseMessage) {
-        String time  = new SimpleDateFormat("dd-MM HH:mm").format(new Date(baseMessage.getCreatedAt()));
-        ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
-                baseMessage.getSender().getNickname(), baseMessage.getSender().getProfileUrl(),
-                baseMessage.getMessage(), baseMessage.getCustomType(), time);
+        String time  = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(baseMessage.getCreatedAt()));
+        if(baseMessage instanceof UserMessage){
+            ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                    baseMessage.getMessage(), baseMessage.getCustomType(), time);
 
-        chatItems.add(chatItem);
-        adapter.notifyDataSetChanged();
+            chatItems.add(chatItem);
+            adapter.notifyDataSetChanged();
+        }
+        else if(baseMessage instanceof FileMessage){
+            ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                    ((FileMessage) baseMessage).getUrl(), baseMessage.getCustomType(), time);
+
+            chatItems.add(chatItem);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void displaySend(BaseMessage baseMessage) {
         String time  = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(baseMessage.getCreatedAt()));
-        ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
-                baseMessage.getMessage(), baseMessage.getCustomType(), time);
+        if(baseMessage instanceof UserMessage){
+            ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                    baseMessage.getMessage(), baseMessage.getCustomType(), time);
 
-        chatItems.add(chatItem);
-        adapter.notifyDataSetChanged();
+            chatItems.add(chatItem);
+            adapter.notifyDataSetChanged();
+        }
+        else if(baseMessage instanceof FileMessage){
+            ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                    ((FileMessage) baseMessage).getUrl(), baseMessage.getCustomType(), time);
+
+            chatItems.add(chatItem);
+            adapter.notifyDataSetChanged();
+        }
+
     }
 
     @Override

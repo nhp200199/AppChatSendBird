@@ -1,19 +1,26 @@
 package com.example.sendbird;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.util.ArrayList;
 
@@ -80,6 +87,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageView img_message = relativeLayout.findViewById(R.id.img_message);
         cv_img_container.setVisibility(View.GONE);
         tv_message.setVisibility(View.GONE);
+        final ProgressBar progressBar = relativeLayout.findViewById(R.id.progress_bar);
 
         String type = message.getType();
         if(type.equals("text")){
@@ -92,6 +100,19 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             Glide.with(mContext)
                     .load(message.getMessage())
                     .thumbnail(0.5f)
+                    .addListener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
                     .into(img_message);
         }
 
@@ -113,6 +134,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         CircleImageView civ_avatar_small = relativeLayout.findViewById(R.id.civ_avatar_small);
         CardView cv_img_container = relativeLayout.findViewById(R.id.cv_img_container);
         ImageView img_message = relativeLayout.findViewById(R.id.img_message);
+        final ProgressBar progressBar = relativeLayout.findViewById(R.id.progress_bar);
 
         cv_img_container.setVisibility(View.GONE);
         tv_content.setVisibility(View.GONE);
@@ -128,6 +150,19 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             Glide.with(mContext)
                     .load(message.getMessage())
                     .thumbnail(0.5f)
+                    .addListener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
                     .into(img_message);
         }
         tv_user_name_small.setText(message.getName());

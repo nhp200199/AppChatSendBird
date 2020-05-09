@@ -170,7 +170,9 @@ public class ConversationFragment extends Fragment {
                     ConversationItem item = new ConversationItem(uid,channelId, name, avatar, time, message);
                     conversationItems.add(item);
                 }else if(baseMessage instanceof FileMessage){
-
+                    message += ((FileMessage) baseMessage).getUrl();
+                    ConversationItem item = new ConversationItem(uid,channelId, name, avatar, time, message);
+                    conversationItems.add(item);
                 }
                 adapter.notifyDataSetChanged();
             }
