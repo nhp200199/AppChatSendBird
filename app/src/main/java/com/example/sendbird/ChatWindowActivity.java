@@ -581,6 +581,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 String sender = baseMessage.getSender().getUserId();
                 if(channel.equals(channelId)){
                     displayReceive(baseMessage);
+                    message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount() - 1);
                 }
             }
 
@@ -616,6 +617,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         String time  = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(baseMessage.getCreatedAt()));
         if(baseMessage instanceof UserMessage){
             ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                    baseMessage.getSender().getNickname(), baseMessage.getSender().getProfileUrl(),
                     baseMessage.getMessage(), baseMessage.getCustomType(), time);
 
             chatItems.add(chatItem);
@@ -623,6 +625,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         }
         else if(baseMessage instanceof FileMessage){
             ChatItem chatItem = new ChatItem(String.valueOf(baseMessage.getMessageId()),baseMessage.getSender().getUserId(),
+                    baseMessage.getSender().getNickname(), baseMessage.getSender().getProfileUrl(),
                     ((FileMessage) baseMessage).getUrl(), baseMessage.getCustomType(), time);
 
             chatItems.add(chatItem);
