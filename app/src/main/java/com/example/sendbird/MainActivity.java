@@ -92,6 +92,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
             }
         });
+        List<String> ids= new ArrayList<String>();
+        ids.add("75");
+        //ids.add("77");
+        SendBird.deleteFriends(ids, new SendBird.DeleteFriendsHandler() {
+            @Override
+            public void onResult(SendBirdException e) {
+
+            }
+        });
 
 
         allFriends = new ArrayList<>();

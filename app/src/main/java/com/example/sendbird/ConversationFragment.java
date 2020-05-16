@@ -124,16 +124,19 @@ public class ConversationFragment extends Fragment {
             @Override
             public void onChannelChanged(BaseChannel channel) {
                 GroupChannel groupChannel = (GroupChannel) channel;
-                BaseMessage baseMessage = groupChannel.getLastMessage();
+                if(!groupChannel.getCustomType().equals("group")){
+                    BaseMessage baseMessage = groupChannel.getLastMessage();
+                    if(!baseMessage.getCustomType().equals("notify")) {
+                        for (int i = 0; i < conversationItems.size(); i++) {
+                            if (conversationItems.get(i).getChannelId().equals(channel.getUrl())) {
+                                updateChannel(i, groupChannel, baseMessage);
+                                return;
+                            }
 
-                for(int i = 0; i < conversationItems.size(); i++){
-                    if(conversationItems.get(i).getChannelId().equals(channel.getUrl())){
-                        updateChannel(i ,groupChannel, baseMessage);
-                        return;
+                        }
+                        addChannel(groupChannel, baseMessage);
                     }
-
                 }
-                addChannel(groupChannel, baseMessage);
             }
 
             private void updateChannel(int pos,GroupChannel channel, BaseMessage baseMessage) {

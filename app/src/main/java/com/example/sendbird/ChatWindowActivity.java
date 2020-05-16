@@ -184,14 +184,24 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
 
     private void loadUserInfo() {
-        if (getIntent().hasExtra(EXTRA_COVERSATION_ID)) {
+        if (getIntent().hasExtra(EXTRA_COVERSATION_CHANNEL)) {
             name = getIntent().getStringExtra(EXTRA_COVERSATION_NAME);
             avatar = getIntent().getStringExtra(EXTRA_COVERSATION_AVA);
             channelId = getIntent().getStringExtra(EXTRA_COVERSATION_CHANNEL);
+            Toast.makeText(ChatWindowActivity.this, channelId, Toast.LENGTH_SHORT).show();
             GroupChannel.getChannel(channelId, new GroupChannel.GroupChannelGetHandler() {
                 @Override
                 public void onResult(GroupChannel groupChannel, SendBirdException e) {
-                    mGoupChannel = groupChannel;
+                    if(e!=null){
+                        Log.e("ERROR", e.getMessage());
+                        Toast.makeText(ChatWindowActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+                        mGoupChannel = groupChannel;
+                        if(mGoupChannel.isDistinct())
+                            updateCurrentUserState();
+                    }
+
                 }
             });
 
@@ -294,7 +304,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 sendMessage();
 
                 //scroll rcv to the last item when send button is click
-                message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount() - 1);
+                message_container.smoothScrollToPosition(message_container.getAdapter().getItemCount());
                 edt_message.setText("");
                 break;
 
@@ -409,7 +419,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     protected void onStart() {
         super.onStart();
         Log.d("Tag", "Chat Window Started");
-        updateCurrentUserState();
+
     }
 
 

@@ -1,6 +1,7 @@
 package com.example.sendbird;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
@@ -21,16 +22,37 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.sendbird.android.BaseChannel;
 import com.sendbird.android.BaseMessage;
+import com.sendbird.android.FileMessage;
+import com.sendbird.android.FriendListQuery;
+import com.sendbird.android.GroupChannel;
+import com.sendbird.android.GroupChannelParams;
 import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
+import com.sendbird.android.UserMessage;
+import com.sendbird.android.UserMessageParams;
+import com.sendbird.android.shadow.com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CreateGroupActivity extends AppCompatActivity implements View.OnClickListener{
+    public static final String CREATE_GROUP_URL = "http://192.168.100.12:8080/SendBird/CreateGroup.php";
     private EditText edt_group_name;
     private Button btn_create;
     private ListView lv_friends;
@@ -45,12 +67,17 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
     private RecyclerView friendsSelectedContainer;
 
     private List<Integer> integerList;
+    public String mChannelId, mUserId;
 
+    private SharedPreferences sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_group);
         connectViews();
+
+        sharedPreferences = getSharedPreferences("user infor", MODE_PRIVATE);
+        mUserId = sharedPreferences.getString("id", null);
 
         lv_friends.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -111,13 +138,10 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
         img_back = findViewById(R.id.img_back);
 
         friendList = new ArrayList<ContactItem>();
-        friendList.add(new ContactItem("1", "Phuc", ""));
-        friendList.add(new ContactItem("2", "Cuongguknkj", ""));
-        friendList.add(new ContactItem("2", "Cuongguknkj", ""));
+        retrieveFriendList();
 
         adapter = new ContactItemAdapter(this, 1, friendList);
         lv_friends.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
 
         itemFriendsSelected = new ArrayList<FriendItem>();
 
@@ -136,6 +160,19 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
 
         integerList = new ArrayList<Integer>();
     }
+
+    private void retrieveFriendList() {
+        SendBird.createFriendListQuery().next(new FriendListQuery.FriendListQueryResultHandler() {
+            @Override
+            public void onResult(List<User> list, SendBirdException e) {
+                for(User a: list){
+                    friendList.add(new ContactItem(a.getUserId(), a.getNickname(), a.getProfileUrl()));
+                }
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -160,7 +197,15 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
                 if(itemFriendsSelected.size() == 0)
                     Toast.makeText(CreateGroupActivity.this, "Chưa chọn thành viên", Toast.LENGTH_SHORT).show();
                 else
-                    Toast.makeText(CreateGroupActivity.this, "successful", Toast.LENGTH_SHORT).show();
+                {
+                    List<String> channelUserIds = new ArrayList<String>();
+                    for (FriendItem item: itemFriendsSelected){
+                        channelUserIds.add(item.getId());
+                    }
+                    channelUserIds.add(mUserId);
+                    createGroup(channelUserIds);
+                    
+                }
                 break;
 
             case R.id.img_back:
@@ -168,6 +213,84 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
         }
 
     }
+
+    private void createGroup(final List<String> channelUserIds) {
+        ProgressDialog.startProgressDialog(CreateGroupActivity.this, "Đang xử lý");
+
+        GroupChannelParams params = new GroupChannelParams()
+                .setPublic(false)
+                .setEphemeral(true)
+                .setDistinct(false)
+                .setCustomType("group")
+                .setName(edt_group_name.getText().toString().trim())
+                .setCoverUrl("http://192.168.100.12:8080/SendBird/upload/Default.jpg")
+                .addUserIds(channelUserIds);
+        GroupChannel.createChannel(params, new GroupChannel.GroupChannelCreateHandler() {
+            @Override
+            public void onResult(GroupChannel groupChannel, SendBirdException e) {
+                if(e!=null){
+                    ProgressDialog.dismissProgressDialog();
+                    Toast.makeText(CreateGroupActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    mChannelId = groupChannel.getUrl();
+                    createChannelInDatabase(mChannelId, channelUserIds);
+                    sendIniMessage(groupChannel);
+                }
+
+            }
+
+            private void createChannelInDatabase(final String channelId, List<String>Ids) {
+                final String idListString = new Gson().toJson(Ids);
+
+                RequestQueue requestQueue = Volley.newRequestQueue(CreateGroupActivity.this);
+                StringRequest request =new StringRequest(Request.Method.POST,
+                        CREATE_GROUP_URL,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                Toast.makeText(CreateGroupActivity.this, response, Toast.LENGTH_LONG).show();
+                                ProgressDialog.dismissProgressDialog();
+                            }
+                        }
+                        ,
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(CreateGroupActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                                ProgressDialog.dismissProgressDialog();
+                            }
+                        }){
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        Map<String,String> params =new HashMap<>();
+                        params.put("channelId", channelId);
+                        params.put("Ids", idListString);
+                        params.put("name", edt_group_name.getText().toString().trim());
+                        return params;
+                    }
+                };
+                int socketTimeout = 20000;//20s timeout
+                RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+                requestQueue.add(request);
+            }
+        });
+
+    }
+
+    private void sendIniMessage(GroupChannel groupChannel) {
+        UserMessageParams params = new UserMessageParams()
+                .setMessage("GROUP CREATED")
+                .setCustomType("text");
+
+        groupChannel.sendUserMessage(params, new BaseChannel.SendUserMessageHandler() {
+            @Override
+            public void onSent(UserMessage userMessage, SendBirdException e) {
+                sendToDatabase(userMessage);
+            }
+        });
+    }
+
     private int member_exists(int postitionSelected, List<Integer> positionArray) {
         if(positionArray == null)
             return -1;
@@ -222,5 +345,41 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
     protected void onPause() {
         SendBird.removeChannelHandler(PersonProfileActivity.CHANNEL_HANDLER_ID);
         super.onPause();
+    }
+    private void sendToDatabase(final BaseMessage userMessage) {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest request =new StringRequest(Request.Method.POST,
+                ChatWindowActivity.SEND_TO_DATABASE,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        if(response.equals("fail"))
+                            Toast.makeText(CreateGroupActivity.this, "Đã xảy ra lỗi", Toast.LENGTH_LONG).show();
+                    }
+                }
+                ,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(CreateGroupActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+                        .format(new Date(userMessage.getCreatedAt()));
+
+                Map<String,String> params =new HashMap<>();
+                params.put("fromId", mUserId);
+                params.put("channelId", mChannelId);
+                params.put("message", "GROUP CREATED");
+                params.put("date", time);
+                params.put("type","text");
+                return params;
+            }
+        };
+        int socketTimeout = 20000;//20s timeout
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeout, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        requestQueue.add(request);
     }
 }

@@ -270,7 +270,7 @@ public class PersonProfileActivity extends AppCompatActivity {
                                                 break;
                                             }
 
-                                        }
+                                            }
                                         Log.d("Tag", String.valueOf(isFriend));
                                         if(!isFriend[0]){
                                             currentState = "new";
@@ -439,6 +439,7 @@ public class PersonProfileActivity extends AppCompatActivity {
                             .setPublic(false)
                             .setEphemeral(true)
                             .setDistinct(true)
+                            .setCustomType("private")
                             .addUserIds(channelUserIds);
                     GroupChannel.createChannel(params, new GroupChannel.GroupChannelCreateHandler() {
                         @Override
@@ -534,6 +535,7 @@ public class PersonProfileActivity extends AppCompatActivity {
                             unFriend(friendId);
                             notifyFriend("notify", "delete");
 
+
                             currentState = "new";
 
                             btn_add_friend.setText("Kết bạn");
@@ -556,8 +558,7 @@ public class PersonProfileActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
-                params.put("userId", userId);
-                params.put("friendId", friendId);
+                params.put("channelId", mChannelId);
                 return params;
             }
         };
