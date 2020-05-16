@@ -136,6 +136,19 @@ public class ConversationFragment extends Fragment {
                         }
                         addChannel(groupChannel, baseMessage);
                     }
+                    else if(baseMessage.getCustomType().equals("notify") && baseMessage.getMessage().equals("delete")){
+
+                        int index = -1;
+                        for (int i = 0; i< conversationItems.size();i++) {
+                            if(conversationItems.get(i).getChannelId().equals(baseMessage.getChannelUrl())){
+                                index = i;
+                                break;
+                            }
+                        }if(index!=-1){
+                            conversationItems.remove(index);
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
                 }
             }
 
