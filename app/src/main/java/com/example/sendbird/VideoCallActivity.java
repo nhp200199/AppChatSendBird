@@ -10,6 +10,13 @@ import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.opentok.android.BaseVideoRenderer;
 import com.opentok.android.OpentokError;
 import com.opentok.android.Publisher;
@@ -19,10 +26,17 @@ import com.opentok.android.Stream;
 import com.opentok.android.Subscriber;
 import com.opentok.android.SubscriberKit;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class VideoCallActivity extends AppCompatActivity implements Session.SessionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener {
+    public static final String URL_GET_AUTHEN = "http://192.168.100.12:8080/SendBird/src/MediaChat.php";
     private static final String API_KEY = "46466472";
-    private static final String SESSION_ID = "2_MX40NjQ2NjQ3Mn5-MTU5MDAzMjcyMjI4NX50cG56SVRqeEI0blVTVTNmQzFvT0I4ZHF-fg";
-    private static final String TOKEN = "T1==cGFydG5lcl9pZD00NjQ2NjQ3MiZzaWc9NDY1MTFiNWZkMWY0MGViZDhlMjYzNGMzN2UyZDdlNGQ2M2ZlOWE5NDpzZXNzaW9uX2lkPTJfTVg0ME5qUTJOalEzTW41LU1UVTVNREF6TWpjeU1qSTROWDUwY0c1NlNWUnFlRUkwYmxWVFZUTm1RekZ2VDBJNFpIRi1mZyZjcmVhdGVfdGltZT0xNTkwMDMzMDEwJm5vbmNlPTAuNzYyNTg4NzQxMDMzOTY5MSZyb2xlPXB1Ymxpc2hlciZleHBpcmVfdGltZT0xNTkwMDM2NjA4JmluaXRpYWxfbGF5b3V0X2NsYXNzX2xpc3Q9";
+    private static  String SESSION_ID = "";
+    private static  String TOKEN = "";
     private static final String LOG_TAG = VideoCallActivity.class.getSimpleName();
 
 
@@ -38,6 +52,7 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
     private FrameLayout mPublisherViewContainer;
     private FrameLayout mSubscriberViewContainer;
     public boolean mConnected;
+    public String channelId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +62,7 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
         getIntentExtra();
         connectViews();
 
-        // initialize and connect to the session
-        mSession = new Session.Builder(this, API_KEY, SESSION_ID).build();
-        mSession.setSessionListener(this);
-        mSession.connect(TOKEN);
+        setAuthen();
     }
 
     private void connectViews() {
@@ -74,6 +86,10 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
         if(getIntent().hasExtra("receiveImg"))
         {
             avatar = getIntent().getStringExtra("receiveImg");
+        }
+        if(getIntent().hasExtra("channelId"))
+        {
+            channelId = getIntent().getStringExtra("channelId");
         }
         Log.d("test", senderID + " " + receiveID);
 
@@ -192,5 +208,42 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
         else{
             finish();
         }
+    }
+    private void setAuthen(){
+
+        final RequestQueue requestQueue = Volley.newRequestQueue(this);
+        StringRequest jsonArrayRequest = new StringRequest(Request.Method.POST, URL_GET_AUTHEN
+                , new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject= new JSONObject(response);
+                    SESSION_ID = jsonObject.getString("mySession");
+                    TOKEN = jsonObject.getString("myToken");
+
+                    // initialize and connect to the session
+                    mSession = new Session.Builder(VideoCallActivity.this, API_KEY, SESSION_ID).build();
+                    mSession.setSessionListener(VideoCallActivity.this);
+                    mSession.connect(TOKEN);
+                    Log.d("authen", SESSION_ID);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("fail", error.toString());
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String,String> params =new HashMap<>();
+                params.put("channelId",channelId);
+                return params;
+            }
+        };
+        requestQueue.add(jsonArrayRequest);
     }
 }

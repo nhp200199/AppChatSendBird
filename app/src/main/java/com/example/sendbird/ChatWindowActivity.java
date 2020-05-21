@@ -373,6 +373,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 if(ContextCompat.checkSelfPermission(ChatWindowActivity.this,
                         Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
                     Intent audioCall = new Intent(ChatWindowActivity.this, AudioCallActivity.class);
+                    audioCall.putExtra("channelId", channelId);
                     audioCall.putExtra("senderID", userId);
                     audioCall.putExtra("receiverID", getIntent().getStringExtra(EXTRA_COVERSATION_ID));
                     audioCall.putExtra("receiverName", name);
@@ -388,6 +389,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                     && ContextCompat.checkSelfPermission(ChatWindowActivity.this,
                         Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
                     Intent videoCall = new Intent(ChatWindowActivity.this, VideoCallActivity.class);
+                    videoCall.putExtra("channelId", channelId);
                     videoCall.putExtra("senderID", userId);
                     videoCall.putExtra("receiverID", getIntent().getStringExtra(EXTRA_COVERSATION_ID));
                     videoCall.putExtra("receiverName", name);
