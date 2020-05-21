@@ -18,7 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".VideoCallActivity"></activity>
+        <activity android:name=".AudioCallActivity"></activity>
+        <activity android:name=".VideoCallActivity" />
         <activity android:name=".WelcomeScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,7 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".MainActivity" />
         <activity android:name=".LoginScreenActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".UserProfileActivity" />
