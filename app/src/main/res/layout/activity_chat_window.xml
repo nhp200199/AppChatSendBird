@@ -68,6 +68,32 @@
             android:layout_toRightOf="@id/linearInfor"
             android:src="@drawable/ic_status_circle"
             android:visibility="invisible"/>
+        <LinearLayout
+            android:id="@+id/media"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/imgBtn_Call"
+                android:layout_width="40dp"
+                android:layout_height="26dp"
+                android:layout_margin="8dp"
+                android:background="#FFFFFF"
+                android:src="@android:drawable/ic_menu_call" />
+
+            <ImageButton
+                android:id="@+id/imgBtn_Videocall"
+                android:layout_width="40dp"
+                android:layout_height="26dp"
+                android:layout_margin="8dp"
+                android:background="#FFFFFF"
+                android:src="@drawable/ic_video_box" />
+
+        </LinearLayout>
     </RelativeLayout>
 
 

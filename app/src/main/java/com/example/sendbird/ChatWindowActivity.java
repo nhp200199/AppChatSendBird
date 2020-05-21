@@ -16,6 +16,8 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -83,6 +85,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     public static final String EXTRA_COVERSATION_CHANNEL = "ConversationChannel";
     public static final int ACTION_GET_PICTURE = 113;
     private int STORAGE_PERMISSION_CODE = 1;
+    private int MEDIA_PERMISSION_CODE = 2;
     public static final String LIST_STATE = "list state";
     public static final String CHANNEL_HANDlER = "ChatWindow Channel Handler";
     public static final String SEND_TO_DATABASE = "http://192.168.100.12:8080/SendBird/SaveMessage.php";
@@ -104,6 +107,9 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     private ImageButton ib_send_file;
     private ImageButton ib_menu;
     private TextView mCurrentEventText;
+    private LinearLayout mMediaLinearLayout;
+    private ImageButton mImageButtonVideo;
+    private ImageButton mImageButtonCall;
 
     private ArrayList<ChatItem> chatItems;
     private ChatAdapter adapter;
@@ -176,11 +182,13 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         ib_menu.setOnClickListener(this);
         ib_send_file.setOnClickListener(this);
         ib_send_picture.setOnClickListener(this);
+        mImageButtonVideo.setOnClickListener(this);
+        mImageButtonCall.setOnClickListener(this);
+
         linearLayout.setOnClickListener(this);
 
         loadChatHistory();
     }
-
 
 
     private void loadUserInfo() {
@@ -198,6 +206,9 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                     }
                     else{
                         mGoupChannel = groupChannel;
+                        if (!mGoupChannel.getCustomType().equals("group")){
+                            mMediaLinearLayout.setVisibility(View.VISIBLE);
+                        }
                         if(mGoupChannel.isDistinct())
                             updateCurrentUserState();
                     }
@@ -270,11 +281,23 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
             else{
                 Toast.makeText(ChatWindowActivity.this, "Bạn cần cấp quyền để chia sẻ hình ảnh", Toast.LENGTH_SHORT).show();
             }
+        } else if(requestCode == MEDIA_PERMISSION_CODE){
+            if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            && grantResults[1] == PackageManager.PERMISSION_GRANTED && grantResults[2] == PackageManager.PERMISSION_GRANTED){
+                Intent videoCall = new Intent(ChatWindowActivity.this, VideoCallActivity.class);
+                videoCall.putExtra("senderID", userId);
+                videoCall.putExtra("receiverID", getIntent().getStringExtra(EXTRA_COVERSATION_ID));
+                videoCall.putExtra("receiverName", name);
+                videoCall.putExtra("receiveImg", avatar);
+                startActivity(videoCall);
+            }else{
+                Toast.makeText(ChatWindowActivity.this, "Bạn cần cấp quyền để thực hiện cuộc gọi", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     private void connectViews() {
-
+        mMediaLinearLayout = findViewById(R.id.media);
         tv_username = findViewById(R.id.tv_friend_name);
         civ_avatar = findViewById(R.id.civ_friend_avatar);
         img_back = findViewById(R.id.img_back);
@@ -286,6 +309,8 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         ib_send_picture = findViewById(R.id.imgbtn_send_picture);
         ib_send_file = findViewById(R.id.imgbtn_send_file);
         ib_menu = findViewById(R.id.imgbtn_media_menu);
+        mImageButtonCall = findViewById(R.id.imgBtn_Call);
+        mImageButtonVideo = findViewById(R.id.imgBtn_Videocall);
 
         mCurrentEventText = (TextView)findViewById(R.id.text_group_chat_current_event);
     }
@@ -335,11 +360,40 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 ib_menu.setVisibility(View.GONE);
                 break;
             case R.id.linearInfor:
-                Intent intent = new Intent(this, PersonProfileActivity.class);
-                intent.putExtra(PersonProfileActivity.EXTRA_ID, getIntent().getStringExtra(EXTRA_COVERSATION_ID));
-                startActivity(intent);
+                if(mGoupChannel.getCustomType().equals("group")){
+
+                }
+                else{
+                    Intent intent = new Intent(this, PersonProfileActivity.class);
+                    intent.putExtra(PersonProfileActivity.EXTRA_ID, getIntent().getStringExtra(EXTRA_COVERSATION_ID));
+                    startActivity(intent);
+                }
+                break;
+            case R.id.imgBtn_Call:
+                break;
+            case R.id.imgBtn_Videocall:
+                if(ContextCompat.checkSelfPermission(ChatWindowActivity.this,
+                        Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(ChatWindowActivity.this,
+                        Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED){
+                    Intent videoCall = new Intent(ChatWindowActivity.this, VideoCallActivity.class);
+                    videoCall.putExtra("senderID", userId);
+                    videoCall.putExtra("receiverID", getIntent().getStringExtra(EXTRA_COVERSATION_ID));
+                    videoCall.putExtra("receiverName", name);
+                    videoCall.putExtra("receiveImg", avatar);
+                    startActivity(videoCall);
+                }else{
+                    retrievePermissions();
+                }
+
                 break;
         }
+    }
+
+    private void retrievePermissions() {
+        ActivityCompat.requestPermissions(ChatWindowActivity.this,
+                new String[]{Manifest.permission.INTERNET, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO },
+                MEDIA_PERMISSION_CODE);
     }
 
 
