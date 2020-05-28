@@ -30,7 +30,8 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".LoginScreenActivity" />
         <activity android:name=".RegisterActivity" />
-        <activity android:name=".UserProfileActivity" />
+        <activity android:name=".UserProfileActivity"
+            android:windowSoftInputMode="adjustNothing"/>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
