@@ -58,9 +58,9 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class UserProfileActivity extends AppCompatActivity implements View.OnClickListener{
-    public static final String USER_PROFILE_URL = "http://192.168.100.12:8080/SendBird/UserProfile.php";
-    public static final String EDIT_USER_PROFILE_URL = "http://192.168.100.12:8080/SendBird/EditProfile.php";
+public class UserProfileActivity extends AppCompatActivity implements View.OnClickListener, PopupDialog.DialogListener{
+    public static final String USER_PROFILE_URL = "http://192.168.100.3:8080/SendBird/UserProfile.php";
+    public static final String EDIT_USER_PROFILE_URL = "http://192.168.100.3:8080/SendBird/EditProfile.php";
     private String userID = "";
     private SharedPreferences sharedPreferences;
 
@@ -76,6 +76,7 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
 
     private List<OptionItem> optionItems;
     private OptionAdapter adapter;
+    public String mAvatar;
 
     public static int convertDpToPixel(float dp, Context context){
         return  Math.round(dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT)) ;
@@ -106,6 +107,7 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
         int width = displayMetrics.widthPixels;
 
         optionItems = new ArrayList<OptionItem>();
+        optionItems.add(new OptionItem(R.drawable.ic_user, "Đổi tên tài khoản"));
         optionItems.add(new OptionItem(R.drawable.ic_lock, "Đổi mật khẩu"));
         optionItems.add(new OptionItem(R.drawable.ic_logout, "Đăng xuất"));
 
@@ -142,6 +144,8 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
                             tv_birthday.setText(object.getString("DoB"));
                             tv_userName.setText(object.getString("nickname"));
                             tv_gender.setText(object.getString("gender"));
+
+                            mAvatar = object.getString("avatar");
 
                             Glide.with(UserProfileActivity.this)
                                     .load(object.getString("avatar"))
@@ -189,10 +193,22 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
                 showDialogChangeName();
 
             } else if (position == 1) {
+                showDialogChangePassword();
+            }else if(position ==2){
                 LogOut();
             }
         }
     };
+
+    private void showDialogChangePassword() {
+        Bundle bundle = new Bundle();
+        bundle.putString("id", userID);
+
+        PopupDialog dialog = new PopupDialog("Thay đổi mật khẩu", R.layout.change_password_popup);
+        dialog.setCancelable(true);
+        dialog.setArguments(bundle);
+        dialog.show(getSupportFragmentManager(), "popup");
+    }
 
     private void LogOut() {
         SendBird.disconnect(new SendBird.DisconnectHandler() {
@@ -284,6 +300,15 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
 
     }
     private void showDialogChangeName() {
+        Bundle bundle = new Bundle();
+        bundle.putString("id", userID);
+        bundle.putString("username", tv_userName.getText().toString());
+        bundle.putString("avatar", mAvatar);
+
+        PopupDialog dialog = new PopupDialog("Thay đổi tên tài khoản", R.layout.chang_username_popup);
+        dialog.setCancelable(true);
+        dialog.setArguments(bundle);
+        dialog.show(getSupportFragmentManager(), "popup");
     }
     @Override
     protected  void onResume() {
@@ -422,6 +447,7 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
                                         }
                                         else {
                                             ProgressDialog.dismissProgressDialog();
+                                            mAvatar = response;
                                             Glide.with(UserProfileActivity.this)
                                                     .load(SendBird.getCurrentUser().getProfileUrl())
                                                     .thumbnail(0.5f)
@@ -470,5 +496,10 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
         bitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArrayOutputStream);
         byte[] imgbyte= byteArrayOutputStream.toByteArray();
         return Base64.encodeToString(imgbyte,Base64.DEFAULT);
+    }
+
+    @Override
+    public void onNameChanged(String newName) {
+        tv_userName.setText(newName);
     }
 }
