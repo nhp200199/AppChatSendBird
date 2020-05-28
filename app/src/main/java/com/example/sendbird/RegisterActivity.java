@@ -1,5 +1,6 @@
 package com.example.sendbird;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -7,6 +8,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,13 +34,15 @@ import com.sendbird.android.SendBird;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
     public static final String appID = "9DCA326D-1743-490F-90B8-2AA2B29CE71B";
-    public static final String REGISTER_URL = "http://192.168.100.12:8080/SendBird/AccountRegister.php";
+    public static final String REGISTER_URL = "http://192.168.100.7:8080/SendBird/AccountRegister.php";
 
     private EditText edt_username;
     private EditText edt_password;
@@ -46,11 +50,11 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText edt_email;
     private EditText edt_gender;
     private Button btn_register;
-    private ImageView img_facebook;
-    private ImageView img_back;
+    private Button btn_login;
     private TextView tv_password_reminder;
     private TextView tv_gender_reminder;
     private TextView tv_email_reminder;
+    private TextView tv_DoB;
 
     private boolean isPasswordFault = false;
     private boolean isGenderFault = false;
@@ -81,7 +85,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 String repeatedPassword = edt_password_repeated.getText().toString().trim();
 
 
-                if(userName.isEmpty() || userPassword.isEmpty() || gender.isEmpty() || userMail.isEmpty() || repeatedPassword.isEmpty()){
+                if(userName.isEmpty() || userPassword.isEmpty() || gender.isEmpty() || userMail.isEmpty() || repeatedPassword.isEmpty()||tv_DoB.getText().toString().equals("")){
                     btn_register.setEnabled(false);
                 }
                 else  btn_register.setEnabled(true);
@@ -195,17 +199,14 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         edt_password_repeated = findViewById(R.id.edt_confirm_password);
         edt_username  = findViewById(R.id.edt_username);
         btn_register = findViewById(R.id.btn_register);
-        img_facebook = findViewById(R.id.img_facebook);
-        img_back = findViewById(R.id.img_back);
         tv_password_reminder = findViewById(R.id.tv_password_reminder);
         tv_gender_reminder = findViewById(R.id.tv_gender_reminder);
         tv_email_reminder = findViewById(R.id.tv_email_reminder);
-
+        tv_DoB = findViewById(R.id.tv_DoB);
+        btn_login = findViewById(R.id.btn_login);
+        tv_DoB.setOnClickListener(this);
         btn_register.setOnClickListener(RegisterActivity.this);
-        img_facebook.setOnClickListener(RegisterActivity.this);
-        img_back.setOnClickListener(RegisterActivity.this);
-
-
+        btn_login.setOnClickListener(RegisterActivity.this);
     }
 
     @Override
@@ -218,13 +219,34 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 else createNewAccount();
                 break;
 
-            case R.id.img_facebook:
+            case R.id.btn_login:
+                startActivity(new Intent(RegisterActivity.this, LoginScreenActivity.class));
+                finish();
                 break;
 
-            case R.id.img_back:
-                onBackPressed();
+            case R.id.tv_DoB:
+                showDatePickerDialog();
                 break;
         }
+    }
+    private void showDatePickerDialog() {
+        Calendar cal = Calendar.getInstance();
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                android.R.style.ThemeOverlay_DeviceDefault_Accent_DayNight,
+                new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        month = month+1;
+                        String date = year +"/" + month + "/" + dayOfMonth;
+                        tv_DoB.setText(date);
+                    }
+                }, year, month, day);
+        datePickerDialog.getDatePicker().setMaxDate(new Date().getTime());
+        datePickerDialog.show();
     }
 
     private void createNewAccount() {
@@ -259,7 +281,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
                 params.put("nickname",edt_username.getText().toString().trim());
-                params.put("DoB","1999-01-20");
+                params.put("DoB",tv_DoB.getText().toString());
                 params.put("password",edt_password.getText().toString().trim());
                 params.put("email",edt_email.getText().toString().trim());
                 params.put("gender",edt_gender.getText().toString().trim());
