@@ -43,8 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PopupDialog extends AppCompatDialogFragment {
-    public static final String URL_CHANGE_PASSWORD = "http://192.168.100.3:8080/SendBird/EditPassword.php";
-    public static final String URL_CHANGE_USERNAME = "http://192.168.100.3:8080/SendBird/EditUsername.php";
+    public static final String URL_CHANGE_PASSWORD = "http://192.168.100.5:8080/SendBird/EditPassword.php";
+    public static final String URL_CHANGE_USERNAME = "http://192.168.100.5:8080/SendBird/EditUsername.php";
 
     private String userID;
     private String mTitle;
@@ -143,8 +143,9 @@ public class PopupDialog extends AppCompatDialogFragment {
                             protected Map<String, String> getParams() throws AuthFailureError {
                                 Map<String,String> params =new HashMap<>();
                                 params.put("id", userID);
-                                params.put("oldPassword", oldPassword);
-                                params.put("newPassword", newPassword);
+                                //params.put("oldPassword", oldPassword);
+                                params.put("oldPassword", String.valueOf(oldPassword.trim().hashCode()));
+                                params.put("newPassword", String.valueOf(newPassword.trim().hashCode()));
 
                                 return params;
                             }
@@ -262,9 +263,32 @@ public class PopupDialog extends AppCompatDialogFragment {
                     }else{
                         tvAlertConfirmPassword.setVisibility(View.GONE);
                     }
+                    if(!checkString(newPassword) || newPassword.length() < 8)
+                        isValid =false;
                     if(isValid)
                         ((AlertDialog)getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
                 }
+            }
+
+            private boolean checkString(String str) {
+                char ch;
+                boolean capitalFlag = false;
+                boolean lowerCaseFlag = false;
+                boolean numberFlag = false;
+                for(int i=0;i < str.length();i++) {
+                    ch = str.charAt(i);
+                    if( Character.isDigit(ch)) {
+                        numberFlag = true;
+                    }
+                    else if (Character.isUpperCase(ch)) {
+                        capitalFlag = true;
+                    } else if (Character.isLowerCase(ch)) {
+                        lowerCaseFlag = true;
+                    }
+                    if(numberFlag && capitalFlag && lowerCaseFlag)
+                        return true;
+                }
+                return false;
             }
 
             @Override

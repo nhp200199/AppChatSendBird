@@ -42,7 +42,7 @@ import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
     public static final String appID = "9DCA326D-1743-490F-90B8-2AA2B29CE71B";
-    public static final String REGISTER_URL = "http://192.168.100.7:8080/SendBird/AccountRegister.php";
+    public static final String REGISTER_URL = "http://192.168.100.5:8080/SendBird/AccountRegister.php";
 
     private EditText edt_username;
     private EditText edt_password;
@@ -54,11 +54,13 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private TextView tv_password_reminder;
     private TextView tv_gender_reminder;
     private TextView tv_email_reminder;
+    private TextView tv_password;
     private TextView tv_DoB;
 
-    private boolean isPasswordFault = false;
-    private boolean isGenderFault = false;
-    private boolean isEmailFault = false;
+    private boolean isRepeatedPasswordFault;
+    private boolean isGenderFault;
+    private boolean isEmailFault;
+    private boolean isPasswordFault;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,12 +118,12 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
                 if(!password.equals(confirmedPassword))
                 {
-                    isPasswordFault = true;
+                    isRepeatedPasswordFault = true;
                     tv_password_reminder.setVisibility(View.VISIBLE);
                 }
 
                 else{
-                    isPasswordFault = false;
+                    isRepeatedPasswordFault = false;
                     tv_password_reminder.setVisibility(View.GONE);
                 }
 
@@ -190,6 +192,53 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         };
         edt_email.addTextChangedListener(textWatcher3);
 
+        TextWatcher textWatcher4 = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String password = edt_password.getText().toString().trim();
+                if(checkString(password) && password.length() >= 8){
+                    isPasswordFault = false;
+                    tv_password.setVisibility(View.GONE);
+                }
+                else{
+                    isPasswordFault = true;
+                    tv_password.setVisibility(View.VISIBLE);
+                }
+            }
+
+            private boolean checkString(String str) {
+                char ch;
+                boolean capitalFlag = false;
+                boolean lowerCaseFlag = false;
+                boolean numberFlag = false;
+                for(int i=0;i < str.length();i++) {
+                    ch = str.charAt(i);
+                    if( Character.isDigit(ch)) {
+                        numberFlag = true;
+                    }
+                    else if (Character.isUpperCase(ch)) {
+                        capitalFlag = true;
+                    } else if (Character.isLowerCase(ch)) {
+                        lowerCaseFlag = true;
+                    }
+                    if(numberFlag && capitalFlag && lowerCaseFlag)
+                        return true;
+                }
+                return false;
+            }
+        };
+        edt_password.addTextChangedListener(textWatcher4);
+
     }
 
     private void connectViews() {
@@ -202,6 +251,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         tv_password_reminder = findViewById(R.id.tv_password_reminder);
         tv_gender_reminder = findViewById(R.id.tv_gender_reminder);
         tv_email_reminder = findViewById(R.id.tv_email_reminder);
+        tv_password = findViewById(R.id.tv_password);
         tv_DoB = findViewById(R.id.tv_DoB);
         btn_login = findViewById(R.id.btn_login);
         tv_DoB.setOnClickListener(this);
@@ -214,7 +264,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         switch (v.getId()){
 
             case R.id.btn_register:
-                if(isEmailFault | isGenderFault | isPasswordFault)
+                if(isEmailFault | isGenderFault | isRepeatedPasswordFault|| isPasswordFault)
                     showErrorPopUp();
                 else createNewAccount();
                 break;
@@ -282,7 +332,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 Map<String,String> params =new HashMap<>();
                 params.put("nickname",edt_username.getText().toString().trim());
                 params.put("DoB",tv_DoB.getText().toString());
-                params.put("password",edt_password.getText().toString().trim());
+                params.put("password",String.valueOf(edt_password.getText().toString().trim().hashCode()));
                 params.put("email",edt_email.getText().toString().trim());
                 params.put("gender",edt_gender.getText().toString().trim());
                 return params;
