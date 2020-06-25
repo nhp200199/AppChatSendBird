@@ -24,13 +24,13 @@
             android:layout_height="24dp"
             android:layout_centerVertical="true"
             android:src="@drawable/ic_user"/>
+
         <EditText
             android:id="@+id/edt_username"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/img_user"
-            android:hint="Email hoặc số điện thoại"
-            />
+            android:hint="Email" />
 
 
     </RelativeLayout>

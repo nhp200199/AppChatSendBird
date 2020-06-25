@@ -18,7 +18,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_weight="4"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:visibility="gone"
@@ -29,19 +29,48 @@
             android:background="@drawable/btn_gradient_style"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:text="Đăng kí"/>
+            android:text="Đăng kí"
+            android:textColor="@color/colorPrimary"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#1e000000" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:textSize="12sp"
+                android:textColor="#80000000"
+                android:lineSpacingExtra="0sp"
+                android:text="Nếu bạn đã có tài khoản"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#1e000000" />
+
+        </LinearLayout>
         <Button
             android:id="@+id/btn_login"
             android:background="@drawable/btn_gradient_style"
+            android:backgroundTint="@color/Grey"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text="Đăng nhập"/>
-        <Button
-            android:id="@+id/btn_login_with_fb"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:text="Đăng nhập với facebook"/>
+            android:text="Đăng nhập"
+            />
 
     </LinearLayout>
     <RelativeLayout
