@@ -199,7 +199,7 @@ public class LoginScreenActivity extends AppCompatActivity implements View.OnCli
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String,String> params =new HashMap<>();
                 params.put("email",edt_username.getText().toString().trim());
-                params.put("password",edt_password.getText().toString().trim());
+                params.put("password",String.valueOf(edt_password.getText().toString().trim().hashCode()));
                 return params;
             }
         };
