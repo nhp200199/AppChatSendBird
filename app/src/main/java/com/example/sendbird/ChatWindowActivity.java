@@ -104,7 +104,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     private TextView tv_online_status;
     private ImageView img_online_status;
     private ImageButton ib_send_picture;
-    private ImageButton ib_send_file;
     private ImageButton ib_menu;
     private TextView mCurrentEventText;
     private LinearLayout mMediaLinearLayout;
@@ -180,7 +179,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         ib_send.setOnClickListener(this);
         edt_message.setOnClickListener(this);
         ib_menu.setOnClickListener(this);
-        ib_send_file.setOnClickListener(this);
         ib_send_picture.setOnClickListener(this);
         mImageButtonVideo.setOnClickListener(this);
         mImageButtonCall.setOnClickListener(this);
@@ -196,7 +194,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
             name = getIntent().getStringExtra(EXTRA_COVERSATION_NAME);
             avatar = getIntent().getStringExtra(EXTRA_COVERSATION_AVA);
             channelId = getIntent().getStringExtra(EXTRA_COVERSATION_CHANNEL);
-            Toast.makeText(ChatWindowActivity.this, channelId, Toast.LENGTH_SHORT).show();
             GroupChannel.getChannel(channelId, new GroupChannel.GroupChannelGetHandler() {
                 @Override
                 public void onResult(GroupChannel groupChannel, SendBirdException e) {
@@ -240,7 +237,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
                 ib_send.setEnabled(true);
                 ib_send_picture.setVisibility(View.GONE);
-                ib_send_file.setVisibility(View.GONE);
                 ib_menu.setVisibility(View.VISIBLE);
             } else {
                 setTypingStatus(false);
@@ -250,7 +246,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
                 ib_send.setEnabled(false);
                 ib_send_picture.setVisibility(View.VISIBLE);
-                ib_send_file.setVisibility(View.VISIBLE);
                 ib_menu.setVisibility(View.GONE);
             }
         }
@@ -307,7 +302,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
         tv_online_status = findViewById(R.id.tv_status);
         img_online_status = findViewById(R.id.img_status);
         ib_send_picture = findViewById(R.id.imgbtn_send_picture);
-        ib_send_file = findViewById(R.id.imgbtn_send_file);
         ib_menu = findViewById(R.id.imgbtn_media_menu);
         mImageButtonCall = findViewById(R.id.imgBtn_Call);
         mImageButtonVideo = findViewById(R.id.imgBtn_Videocall);
@@ -335,7 +329,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
             case R.id.edt_chat_box:
                 ib_send_picture.setVisibility(View.GONE);
-                ib_send_file.setVisibility(View.GONE);
                 ib_menu.setVisibility(View.VISIBLE);
                 break;
 
@@ -356,7 +349,6 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
 
             case R.id.imgbtn_media_menu:
                 ib_send_picture.setVisibility(View.VISIBLE);
-                ib_send_file.setVisibility(View.VISIBLE);
                 ib_menu.setVisibility(View.GONE);
                 break;
             case R.id.linearInfor:

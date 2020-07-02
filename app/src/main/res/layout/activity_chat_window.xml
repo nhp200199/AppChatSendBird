@@ -119,13 +119,6 @@
             android:scaleType="center"/>
 
         <ImageButton
-            android:id="@+id/imgbtn_send_file"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginLeft="8dp"
-            android:src="@drawable/ic_file"
-            android:backgroundTint="#FFFFFF"/>
-        <ImageButton
             android:id="@+id/imgbtn_media_menu"
             android:layout_width="32dp"
             android:layout_height="32dp"

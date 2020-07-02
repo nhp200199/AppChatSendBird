@@ -73,8 +73,6 @@ public class OnlineFriendsFragment extends Fragment {
                 intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_AVA, items.get(position).getAvatar());
                 intent.putExtra(ChatWindowActivity.EXTRA_COVERSATION_CHANNEL, items.get(position).getChannel());
 
-                Toast.makeText(getActivity(), items.get(position).getChannel(), Toast.LENGTH_SHORT).show();
-
                 startActivity(intent);
             }
         });
