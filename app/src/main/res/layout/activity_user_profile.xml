@@ -47,7 +47,7 @@
         android:textSize="26dp"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
-        android:text="Phuc Nguyen"/>
+        android:text="Anh Đẹp Trai hoặc Chị Đẹp Gái"/>
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -76,7 +76,7 @@
                 android:id="@+id/tv_gender"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="hello"/>
+                android:text="thành thật với giới tính mình"/>
 
         </LinearLayout>
 
@@ -98,7 +98,7 @@
                 android:id="@+id/tv_email"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="hello"/>
+                android:text="anhcongan@gmail.com"/>
 
         </LinearLayout>
 
@@ -120,7 +120,7 @@
                 android:id="@+id/tv_birthday"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="hello"/>
+                android:text="đây là ngày tuyệt vời"/>
 
         </LinearLayout>
 

@@ -203,12 +203,14 @@ public class PersonProfileActivity extends AppCompatActivity {
 
                             Glide.with(PersonProfileActivity.this)
                                     .load(object.getString("avatar"))
+                                    .placeholder(R.drawable.couple)
                                     .thumbnail(0.5f)
                                     .apply(RequestOptions.skipMemoryCacheOf(true))
                                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))
                                     .into(civ_avatar);
                             Glide.with(PersonProfileActivity.this)
                                     .load(object.getString("cover"))
+                                    .placeholder(R.drawable.arsenal)
                                     .thumbnail(0.5f)
                                     .apply(RequestOptions.skipMemoryCacheOf(true))
                                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))

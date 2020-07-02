@@ -69,6 +69,7 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
         tv_userName.setText(userName);
         Glide.with(this)
                 .load(avatar)
+                .placeholder(R.drawable.couple)
                 .into(circleImageView_ava);
 
         setAuthen();

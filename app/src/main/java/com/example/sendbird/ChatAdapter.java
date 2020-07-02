@@ -100,6 +100,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             Glide.with(mContext)
                     .load(message.getMessage())
                     .thumbnail(0.5f)
+                    .placeholder(R.drawable.couple)
                     .addListener(new RequestListener<Drawable>() {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
@@ -149,6 +150,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             Glide.with(mContext)
                     .load(message.getMessage())
+                    .placeholder(R.drawable.couple)
                     .thumbnail(0.5f)
                     .addListener(new RequestListener<Drawable>() {
                         @Override
@@ -168,6 +170,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         tv_user_name_small.setText(message.getName());
         Glide.with(mContext)
                 .load(message.getAvatar())
+                .placeholder(R.drawable.couple)
                 .thumbnail(0.5f)
                 .into(civ_avatar_small);
 

@@ -55,6 +55,7 @@ public class FindPeopleAdapter extends ArrayAdapter<OptionItem> {
             Glide.with(mContext)
                     .load(friendItem.getImg_option())
                     .thumbnail(0.5f)
+                    .placeholder(R.drawable.couple)
                     .into(imageViewFlag);
 
         }

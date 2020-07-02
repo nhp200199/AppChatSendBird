@@ -41,6 +41,7 @@ public class OptionAdapter extends ArrayAdapter<OptionItem> {
         optionName.setText(option.getTitle_option());
         Glide.with(mContext)
                 .load(option.getImg_option())
+                .placeholder(R.drawable.couple)
                 .into(optoinImg);
         return  convertView;
     }

@@ -149,12 +149,14 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
 
                             Glide.with(UserProfileActivity.this)
                                     .load(object.getString("avatar"))
+                                    .placeholder(R.drawable.couple)
                                     .thumbnail(0.5f)
                                     .apply(RequestOptions.skipMemoryCacheOf(true))
                                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))
                                     .into(civ_avatar);
                             Glide.with(UserProfileActivity.this)
                                     .load(object.getString("cover"))
+                                    .placeholder(R.drawable.arsenal)
                                     .thumbnail(0.5f)
                                     .apply(RequestOptions.skipMemoryCacheOf(true))
                                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))
@@ -383,6 +385,7 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
                             if(!response.equals("There is something happens, please try again!")){
                                 Glide.with(UserProfileActivity.this)
                                         .load(response)
+                                        .placeholder(R.drawable.arsenal)
                                         .apply(RequestOptions.skipMemoryCacheOf(true))
                                         .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))
                                         .into(img_cover);
@@ -450,6 +453,7 @@ public class UserProfileActivity extends AppCompatActivity implements View.OnCli
                                             mAvatar = response;
                                             Glide.with(UserProfileActivity.this)
                                                     .load(SendBird.getCurrentUser().getProfileUrl())
+                                                    .placeholder(R.drawable.couple)
                                                     .thumbnail(0.5f)
                                                     .apply(RequestOptions.skipMemoryCacheOf(true))
                                                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))

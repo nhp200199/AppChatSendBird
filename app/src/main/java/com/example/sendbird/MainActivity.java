@@ -190,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             JSONObject object = new JSONObject(response);
                             Glide.with(MainActivity.this)
                                     .load(object.getString("avatar"))
+                                    .placeholder(R.drawable.couple)
                                     .thumbnail(0.5f)
                                     .apply(RequestOptions.skipMemoryCacheOf(true))
                                     .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))

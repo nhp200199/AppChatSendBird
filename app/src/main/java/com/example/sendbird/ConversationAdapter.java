@@ -67,6 +67,7 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
         tv_conversationName.setText(conversationItems.get(position).getName());
         Glide.with(mContext)
                 .load(conversationItems.get(position).getAvatar())
+                .placeholder(R.drawable.couple)
                 .thumbnail(0.5f)
                 .apply(RequestOptions.skipMemoryCacheOf(true))
                 .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.NONE))

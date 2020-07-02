@@ -216,6 +216,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
             tv_username.setText(name);
             Glide.with(this)
                     .load(avatar)
+                    .placeholder(R.drawable.couple)
                     .thumbnail(0.5f)
                     .into(civ_avatar);
         }

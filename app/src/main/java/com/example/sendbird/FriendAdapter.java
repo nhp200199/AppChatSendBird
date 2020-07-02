@@ -46,6 +46,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
         tv_friendName.setText(friendItems.get(position).getName());
         Glide.with(mContext)
                 .load(friendItems.get(position).getAvatar())
+                .placeholder(R.drawable.couple)
                 .into(civ_friendImg);
 
         linearLayout.setOnClickListener(new View.OnClickListener() {
