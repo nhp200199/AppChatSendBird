@@ -54,7 +54,7 @@ import java.util.Map;
 public class ConversationFragment extends Fragment {
     public static final String TAG = ConversationFragment.class.getSimpleName();
     public static final String CHANNEL_HANDLER = "Conversation Channel Handler";
-    public static final String URL_GET_CONVERSATIONS = "http://192.168.100.12:8080/SendBird/getConversationItem.php";
+    public static final String URL_GET_CONVERSATIONS = "https://pacpac-chat.000webhostapp.com/getConversationItem.php";
     private ConversationAdapter adapter;
     private RecyclerView conversationContainer;
     private ArrayList<ConversationItem> conversationItems;

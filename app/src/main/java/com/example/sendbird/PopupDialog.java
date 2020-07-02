@@ -43,8 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PopupDialog extends AppCompatDialogFragment {
-    public static final String URL_CHANGE_PASSWORD = "http://192.168.100.5:8080/SendBird/EditPassword.php";
-    public static final String URL_CHANGE_USERNAME = "http://192.168.100.5:8080/SendBird/EditUsername.php";
+    public static final String URL_CHANGE_PASSWORD = "https://pacpac-chat.000webhostapp.com/EditPassword.php";
+    public static final String URL_CHANGE_USERNAME = "https://pacpac-chat.000webhostapp.com/EditUsername.php";
 
     private String userID;
     private String mTitle;

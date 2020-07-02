@@ -42,8 +42,8 @@ import java.util.Map;
 
 public class FindUserActivity extends AppCompatActivity implements View.OnClickListener{
 
-    public static final String FIND_USER_URL = "http://192.168.100.12:8080/SendBird/FindUser.php";
-    public static final String ADD_CURRENT_SEARCH = "http://192.168.100.12:8080/SendBird/AddCurrentSearch.php";
+    public static final String FIND_USER_URL = "https://pacpac-chat.000webhostapp.com/FindUser.php";
+    public static final String ADD_CURRENT_SEARCH = "https://pacpac-chat.000webhostapp.com/AddCurrentSearch.php";
 
     private ListView friend_container;
     private EditText edt_find_friend;
@@ -198,6 +198,7 @@ public class FindUserActivity extends AppCompatActivity implements View.OnClickL
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
                 params.put("name",name);
+                params.put("userId", SendBird.getCurrentUser().getUserId());
                 return params;
             }
         };

@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LoginScreenActivity extends AppCompatActivity implements View.OnClickListener{
-    public static final String LOGIN_URL = "http://192.168.100.12:8080/SendBird/AccountLogin.php";
+    public static final String LOGIN_URL = "https://pacpac-chat.000webhostapp.com/AccountLogin.php";
     private String userID = "";
 
     private EditText edt_username;
@@ -128,14 +128,13 @@ public class LoginScreenActivity extends AppCompatActivity implements View.OnCli
     public void onClick(View v) {
         switch(v.getId()){
             case R.id.btn_login:
-
                 LogIn();
                 break;
 
             case R.id.btn_register:
-
                 Intent intent1 = new Intent(this, RegisterActivity.class);
                 startActivity(intent1);
+                finish();
                 break;
         }
     }

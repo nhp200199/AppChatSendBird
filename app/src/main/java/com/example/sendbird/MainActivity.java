@@ -44,9 +44,11 @@ import com.sendbird.android.SendBird;
 import com.sendbird.android.SendBirdException;
 import com.sendbird.android.User;
 
+import org.conscrypt.Conscrypt;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.Security;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,7 +76,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private ConversationFragment mConversationFragment;
 
-        Bundle bundle = new Bundle();
+    Bundle bundle = new Bundle();
+    static {
+        // add Conscrypt in list of security providers for device
+        Security.addProvider(Conscrypt.newProvider());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

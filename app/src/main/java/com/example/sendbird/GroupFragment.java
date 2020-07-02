@@ -48,7 +48,7 @@ import java.util.Map;
  * A simple {@link Fragment} subclass.
  */
 public class GroupFragment extends Fragment{
-    public static final String RETRIEVE_GROUPS_URL = "http://192.168.100.12:8080/SendBird/getGroupConversation.php";
+    public static final String RETRIEVE_GROUPS_URL = "https://pacpac-chat.000webhostapp.com/getGroupConversation.php";
     public static final String CHANNEL_HANDLER = "Group Channel Handler";
 
     private RecyclerView groupContainer;

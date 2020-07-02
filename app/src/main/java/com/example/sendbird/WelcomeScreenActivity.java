@@ -47,12 +47,7 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if(!isFirstTime()){
-            Intent intent = new Intent(this, LoginScreenActivity.class);
-            startActivity(intent);
-            finish();
-        }
+        directToLoginScreen();
 
         setContentView(R.layout.activity_welcome_screen);
 
@@ -95,7 +90,6 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
             public void onTabSelected(TabLayout.Tab tab) {
                 if(tab.getPosition() == screenItems.size()-1){
                     loadLastScreen();
-
                 }
             }
 
@@ -116,6 +110,14 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
 
         sharedPreferences = getSharedPreferences("checkFirstTime", MODE_PRIVATE);
 
+    }
+
+    private void directToLoginScreen() {
+        if(!isFirstTime()){
+            Intent intent = new Intent(this, LoginScreenActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     private void loadLastScreen() {
@@ -170,14 +172,15 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
                 break;
 
             case R.id.btn_register:
+                isFirstTime =false;
+                SharedPreferences.Editor editor2 = sharedPreferences.edit();
+                editor2.putBoolean("isFirstTime", isFirstTime);
+                editor2.apply();
+
                 Intent intent1 = new Intent(this, RegisterActivity.class);
                 startActivity(intent1);
                 finish();
                 break;
-
-
-
-
         }
     }
     private boolean isFirstTime() {

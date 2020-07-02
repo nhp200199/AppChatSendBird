@@ -78,7 +78,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatWindowActivity extends AppCompatActivity implements View.OnClickListener {
-    public static final String GET_MESSAGES_URL = "http://192.168.100.12:8080/SendBird/getMessageItem.php";
+    public static final String GET_MESSAGES_URL = "https://pacpac-chat.000webhostapp.com/getMessageItem.php";
     public static final String EXTRA_COVERSATION_ID = "ConversationID";
     public static final String EXTRA_COVERSATION_NAME = "ConversationName";
     public static final String EXTRA_COVERSATION_AVA = "ConversationAva";
@@ -88,7 +88,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
     private int MEDIA_PERMISSION_CODE = 2;
     public static final String LIST_STATE = "list state";
     public static final String CHANNEL_HANDlER = "ChatWindow Channel Handler";
-    public static final String SEND_TO_DATABASE = "http://192.168.100.12:8080/SendBird/SaveMessage.php";
+    public static final String SEND_TO_DATABASE = "https://pacpac-chat.000webhostapp.com/SaveMessage.php";
 
     private String channelId, name, avatar, userId;
     private String checker = "", myUrl = "";

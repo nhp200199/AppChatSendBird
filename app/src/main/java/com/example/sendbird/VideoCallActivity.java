@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VideoCallActivity extends AppCompatActivity implements Session.SessionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener {
-    public static final String URL_GET_AUTHEN = "http://192.168.100.12:8080/SendBird/src/MediaChat.php";
+    public static final String URL_GET_AUTHEN = "https://pacpac-chat.000webhostapp.com/src/MediaChat.php";
     private static final String API_KEY = "46466472";
     private static  String SESSION_ID = "";
     private static  String TOKEN = "";

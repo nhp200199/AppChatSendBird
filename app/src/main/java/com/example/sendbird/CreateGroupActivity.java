@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CreateGroupActivity extends AppCompatActivity implements View.OnClickListener{
-    public static final String CREATE_GROUP_URL = "http://192.168.100.12:8080/SendBird/CreateGroup.php";
+    public static final String CREATE_GROUP_URL = "https://pacpac-chat.000webhostapp.com/CreateGroup.php";
     private EditText edt_group_name;
     private Button btn_create;
     private ListView lv_friends;
@@ -223,7 +223,7 @@ public class CreateGroupActivity extends AppCompatActivity implements View.OnCli
                 .setDistinct(false)
                 .setCustomType("group")
                 .setName(edt_group_name.getText().toString().trim())
-                .setCoverUrl("http://192.168.100.12:8080/SendBird/upload/Default.jpg")
+                .setCoverUrl("https://pacpac-chat.000webhostapp.com/upload/Default.jpg")
                 .addUserIds(channelUserIds);
         GroupChannel.createChannel(params, new GroupChannel.GroupChannelCreateHandler() {
             @Override
