@@ -54,9 +54,9 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
         connectViews();
 
         screenItems = new ArrayList<ScreenItem>();
-        screenItems.add(new ScreenItem("Hello", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, consectetur  consectetur adipiscing elit", R.drawable.img1));
-        screenItems.add(new ScreenItem("hi", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, consectetur  consectetur adipiscing elit", R.drawable.img2));
-        screenItems.add(new ScreenItem("welcome", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, consectetur  consectetur adipiscing elit", R.drawable.img3));
+        screenItems.add(new ScreenItem("Hello", getString(R.string.welcome_page_1_text), R.drawable.img1));
+        screenItems.add(new ScreenItem("hi", getString(R.string.welcome_page_2_text), R.drawable.img2));
+        screenItems.add(new ScreenItem("welcome", getString(R.string.welcome_page_3_text), R.drawable.img3));
 
         adapter = new WelcomeScreenPagerAdapter(this, screenItems);
         viewPager.setAdapter(adapter);

@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">SendBird</string>
+    <string name="welcome_page_1_text"></string>
+    <string name="welcome_page_2_text"></string>
+    <string name="welcome_page_3_text"></string>
 
     <!-- Group Channel -->
     <string name="user_typing">%s is typing</string>
