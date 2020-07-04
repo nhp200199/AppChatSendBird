@@ -437,7 +437,7 @@ public class ChatWindowActivity extends AppCompatActivity implements View.OnClic
                 }){
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                String time = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
+                String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                         .format(new Date(userMessage.getCreatedAt()));
 
                 Map<String,String> params =new HashMap<>();
