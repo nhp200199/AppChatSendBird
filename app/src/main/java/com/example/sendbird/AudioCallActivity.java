@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,7 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
 
     private CircleImageView btn_hangup;
     private Button btn_mute;
+    private ImageView img_background;
 
     private String senderID="";
     private String receiveID="";
@@ -81,6 +83,12 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
                 .placeholder(R.drawable.couple)
                 .into(circleImageView_ava);
 
+        img_background.setImageAlpha(150);
+        Glide.with(this)
+                .load(avatar)
+                .placeholder(R.drawable.couple)
+                .into(img_background);
+
         setAuthen();
     }
 
@@ -88,6 +96,7 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
         tv_userName = (TextView) findViewById(R.id.userName);
         circleImageView_ava = (CircleImageView) findViewById(R.id.avatar);
         btn_hangup = (CircleImageView)findViewById(R.id.civ_end_call);
+        img_background = (ImageView)findViewById(R.id.img_background);
         btn_hangup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
