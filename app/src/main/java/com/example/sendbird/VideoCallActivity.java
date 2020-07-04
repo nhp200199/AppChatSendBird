@@ -9,7 +9,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 
 import android.util.Log;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -35,8 +34,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.hdodenhof.circleimageview.CircleImageView;
-
 public class VideoCallActivity extends AppCompatActivity implements Session.SessionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener {
     public static final String URL_GET_AUTHEN = "https://pacpac-chat.000webhostapp.com/src/MediaChat.php";
     private static final String API_KEY = "46466472";
@@ -59,8 +56,6 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
     public boolean mConnected;
     public String channelId;
 
-    private CircleImageView btn_hangup;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,13 +70,6 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
     private void connectViews() {
         mPublisherViewContainer = (FrameLayout)findViewById(R.id.publisher_container);
         mSubscriberViewContainer = (FrameLayout)findViewById(R.id.subscriber_container);
-        btn_hangup = (CircleImageView)findViewById(R.id.civ_end_call);
-        btn_hangup.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
     }
 
     private void getIntentExtra(){
@@ -137,24 +125,14 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
         showPopUp();
     }
 
-    private void showPopUp() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Cuộc gọi đã kết thúc");
-        builder.setIcon(R.drawable.arsenal);
-        builder.setCancelable(false);
-        builder.setPositiveButton("Đóng", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        builder.create();
-        builder.show();
-    }
-
     @Override
     public void onStreamReceived(Session session, Stream stream) {
         Log.d(LOG_TAG, "onStreamReceived: New Stream Received "+stream.getStreamId() + " in session: "+session.getSessionId());
+
+        if (mSubscriber != null) {
+            mSubscriber = null;
+            mSubscriberViewContainer.removeAllViews();
+        }
 
         if (mSubscriber == null) {
             mSubscriber = new Subscriber.Builder(this, stream).build();
@@ -218,7 +196,8 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
 
     @Override
     public void onDisconnected(SubscriberKit subscriberKit) {
-        //finish();
+       // finish();
+        mSession.disconnect();
     }
 
     @Override
@@ -232,7 +211,6 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
     public void onBackPressed() {
         if(mConnected){
             mSession.disconnect();
-            //finish();
         }
         else{
             finish();
@@ -274,5 +252,19 @@ public class VideoCallActivity extends AppCompatActivity implements Session.Sess
             }
         };
         requestQueue.add(jsonArrayRequest);
+    }
+    private void showPopUp() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Cuộc gọi đã kết thúc");
+        builder.setIcon(R.drawable.arsenal);
+        builder.setCancelable(false);
+        builder.setPositiveButton("Đóng", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        builder.create();
+        builder.show();
     }
 }
