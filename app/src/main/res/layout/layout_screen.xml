@@ -6,19 +6,20 @@
 
     <ImageView
         android:id="@+id/img_intro"
-        android:layout_width="wrap_content"
-        android:layout_height="222dp"
-        android:src="@drawable/couple"
-        />
+        android:layout_width="500px"
+        android:layout_height="500px"
+        android:src="@drawable/pacpac"
+        android:scaleType="fitXY"/>
     <TextView
         android:id="@+id/tv_intro_title"
-        android:textSize="26sp"
-        android:layout_marginTop="20dp"
-        android:textStyle="bold"
-        android:text="TEXT VIEW"
-        android:layout_width="wrap_content"
+        android:textSize="22sp"
+        android:layout_marginTop="32dp"
+        android:text="Chúng tôi mong muốn gửi đến bạn một nơi hoàn hảo nhất để nhắn tin với bạn bè."
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        />
+        android:layout_marginRight="72px"
+        android:layout_marginLeft="72px"
+        android:textAlignment="center"/>
     <TextView
         android:id="@+id/tv_intro_description"
         android:layout_width="wrap_content"
@@ -28,6 +29,6 @@
         android:layout_marginTop="20dp"
         android:layout_marginLeft="25dp"
         android:layout_marginRight="25dp"
-        android:text="sdfjsfhaslfslkjsdkljsdfsdfskjfskfksldsdfhaskdsldkjflksdjf"/>
+        android:text="Mo ta"/>
 
 </LinearLayout>

@@ -54,9 +54,9 @@ public class WelcomeScreenActivity extends AppCompatActivity implements View.OnC
         connectViews();
 
         screenItems = new ArrayList<ScreenItem>();
-        screenItems.add(new ScreenItem("Hello", getString(R.string.welcome_page_1_text), R.drawable.img1));
-        screenItems.add(new ScreenItem("hi", getString(R.string.welcome_page_2_text), R.drawable.img2));
-        screenItems.add(new ScreenItem("welcome", getString(R.string.welcome_page_3_text), R.drawable.img3));
+        screenItems.add(new ScreenItem("Chào mừng đến với PACPAC !", getString(R.string.welcome_page_1_text), R.drawable.introo1));
+        screenItems.add(new ScreenItem("Chúng tôi mong muốn gửi đến bạn một nơi hoàn hảo nhất để nhắn tin với bạn bè.", getString(R.string.welcome_page_2_text), R.drawable.introo2));
+        screenItems.add(new ScreenItem("Nào hãy đăng ký ngay một tài khoản.", getString(R.string.welcome_page_3_text), R.drawable.pacpac));
 
         adapter = new WelcomeScreenPagerAdapter(this, screenItems);
         viewPager.setAdapter(adapter);

@@ -2,21 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
+    android:background="#f2f2f2"
     android:gravity="center">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:text="HELLO"
-        />
-
+<!--    <TextView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:textSize="24sp"-->
+<!--        android:textStyle="bold"-->
+<!--        android:text="HELLO"-->
+<!--        />-->
+    <ImageView
+        android:layout_width="350px"
+        android:layout_height="350px"
+        android:id="@+id/logo"
+        android:src="@drawable/pacpac"
+        android:scaleType="fitXY"/>
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp">
+        android:layout_marginTop="16dp">
 
         <ImageView
             android:id="@+id/img_user"
@@ -70,7 +75,7 @@
         android:background="@drawable/btn_gradient_style"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="32dp"
         android:text="Đăng Nhập"/>
     <Button
         android:id="@+id/btn_register"
