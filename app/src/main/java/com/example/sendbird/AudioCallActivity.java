@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -43,6 +47,8 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
     private static  String TOKEN = "";
     private static final String LOG_TAG = AudioCallActivity.class.getSimpleName();
 
+    private CircleImageView btn_hangup;
+    private Button btn_mute;
 
     private String senderID="";
     private String receiveID="";
@@ -58,6 +64,9 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
 
     public boolean mConnected;
     public String channelId;
+    private boolean isMuted;
+    private int seconds;
+    private boolean running;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +87,31 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
     private void connectViews() {
         tv_userName = (TextView) findViewById(R.id.userName);
         circleImageView_ava = (CircleImageView) findViewById(R.id.avatar);
+        btn_hangup = (CircleImageView)findViewById(R.id.civ_end_call);
+        btn_hangup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
+        btn_mute = (Button)findViewById(R.id.btn_mute_voice );
+        btn_mute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mPublisher != null)
+                    if(!isMuted){
+                        isMuted = true;
+                        mPublisher.setPublishAudio(false);
+                        Toast.makeText(AudioCallActivity.this, "Loa thoại đã được tắt", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        isMuted = false;
+                        mPublisher.setPublishAudio(true);
+                        Toast.makeText(AudioCallActivity.this, "Loa thoại đã được bật", Toast.LENGTH_SHORT).show();
+                    }
+            }
+        });
     }
 
     private void getIntentExtra(){
@@ -122,6 +156,7 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
         mConnected = false;
         Log.i(LOG_TAG, "Session Disconnected");
         mSession = null;
+        running = false;
     }
 
     @Override
@@ -184,6 +219,27 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
     @Override
     public void onConnected(SubscriberKit subscriberKit) {
         Toast.makeText(this, userName + " đã tiếp nhận cuộc gọi", Toast.LENGTH_SHORT).show();
+        running = true;
+        startCoutTimer();
+    }
+    private void startCoutTimer() {
+        final TextView timeView = (TextView) findViewById(R.id.tv_conversation_time);
+        final Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                int hours = seconds / 3600;
+                int minutes = (seconds % 3600) / 60;
+                int secs = seconds % 60;
+                String time = String.format(Locale.getDefault(),
+                        "%d:%02d:%02d", hours, minutes, secs);
+                timeView.setText(time);
+                if (running) {
+                    seconds++;
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
     }
 
     @Override
@@ -202,7 +258,6 @@ public class AudioCallActivity extends AppCompatActivity implements Session.Sess
     public void onBackPressed() {
         if(mConnected){
             mSession.disconnect();
-            finish();
         }
         else{
             finish();
